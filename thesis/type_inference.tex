@@ -1,0 +1,20 @@
+The type inference algorithm looks at one class after another. Therefore all classes must be ordered in a way that method calls only call methods from classes defined before the current class.
+However, this does not constrain the algorithm as the program where this is not the case can be transformed to a program where it is.
+This transformation is shown in the paper [...].
+\\
+In the following it is assumed that a program always fulfills this condition.
+
+The algorithm mainly consist of two parts:
+First, constraint generation and second, constraint solving.
+As solving the constraints can lead to multiple solutions for a single class, simply one solution is assumed. If the algorithm later fails, it backtracks and assumes the next solution.
+
+\begin{figure}[H]
+    \begin{align*}
+        \text{FJTypeInference}&(\prod, \ \classheader \{ ... \}) = \\
+        \text{let} (\overline{\lambda}, \ \text{C}) &= \text{FJType}(\prod, \classheader \{ ... \}) \\
+        (\sigma, \yp) &= \text{Unify}(\text{C}, \overline{\text{X}} <: \overline{\text{N}}) \\
+        \text{in} \prod \cup \ \{( & \cm \ : \ \yp \ \oto{\sigma(a)}) \ | \ (\cm : \oto{a} ) \in \overline{\lambda} \}
+    \end{align*}
+    \caption{Type Inference}
+    \label{type_inference}
+\end{figure}

@@ -1,0 +1,52 @@
+In the following sections all auxiliary functions that are used in the typeinference algorithm are specified.
+
+\subsection{Auxiliary Typing}
+
+\subsection{Subsitution}
+
+\begin{figure}[H]
+    \begin{align*}
+1&: \txn{T}{X}{N}
+\\
+\\
+2&: \tsxsn{T}{X}{N}
+\\
+\\
+3&: \tsxsns{T}{X}{N}
+    \end{align*}
+    \caption{Substitution}
+    \label{substitution}
+\end{figure}
+
+The first rule (1) shows the standart substitution rule. In a non variable type N every variable type X is replaced by the given type T.
+\\
+The second rule (2) is short for \inl{[T_1/X_1, ... , T_n/X_n]N}.
+\\
+The third rule (3) is short for \inl{[T_1/X_1, ... , T_n/X_n]N_1, ... , [T_1/X_1, ... , T_n/X_n]N_n}.
+\\
+These rules are implemented in different functions using pattern matching on the different type types.
+\subsection{Subtyping}
+
+\begin{figure}[H]
+    \begin{align*}
+1&: \ \Delta \vdash \text{T} <: \text{T}
+\\
+\\
+2&: \ \frac{\Delta \vdash \text{S} <: \text{T} \quad \Delta \vdash \text{T} <: \text{U}}{\Delta \vdash \text{S} <: \text{U}}
+\\
+\\
+3&: \ \Delta \vdash \text{X} <: \Delta(\text{X})
+\\
+\\
+4&: \ \frac{
+    \begin{matrix}
+        \classheader \ \{...\} \\
+        \Delta \vdash \ot{T} ok \quad \Delta \vdash \ot{T} <: \tsxsns{T}{X}{N}
+    \end{matrix}}
+    {\Delta C<\ot{T}> \ ok}
+    \end{align*}
+    \caption{Subtyping}
+    \label{subtyping}
+\end{figure}
+
+\subsection{Auxiliary Functions}

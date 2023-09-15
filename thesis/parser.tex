@@ -1,0 +1,78 @@
+\subsection{Abstract Syntax Tree}
+
+Having a program in plain text form is rather useless for running the type inference algorithm. Instead, having the program in a specific form where classdefinitions can be accessed and went through is desirable.
+Such a form is called an Abstract Syntax Tree short AST. Every node of this AST is represented by a dataclass in Python \footnote{FGJ\_AST.py}.
+
+The entry point for every full program is the class \inl{Program}.
+\begin{minted}[escapeinside=||]{python}
+    [...]
+
+    ClassTable = dict[str, ClassDef]
+
+
+    @dataclass
+    class Program:
+        CT: ClassTable,
+        expression: Expression
+\end{minted}
+
+The class \inl{Program} has two fields: \inl{CT} for Class Table a mapping from every class name to it's definition. Second, \inl{expression} an expression to be evaluated.
+
+The implementation of types, classdefinitions, methoddefinitions and expressions are straight forward adaptations of their formal definitions in the paper "Global Type Inference for Featherweight Generic
+Java".
+
+For example the implementation for classdefinition \inl{ClassDef}:
+\begin{minted}[escapeinside=||]{python}
+    @dataclass
+    class ClassDef:
+        name: str,
+        superclass: Type,
+        typed_fields: FieldEnv,
+        methods: list[MethodDef]
+\end{minted}
+
+There is no field for a constructor because as mentioned earlier constructors are dropped in this implemenatation.
+
+The implemenatations for types and expressions differs a bit. Because there are different types and different expressions, for both first a plain class with no fields is defined \inl{Type} and \inl{Expressions} from wich then all the different kinds of types or expressions inherit.
+Therefore it is possible to match against types and expressions.
+
+\begin{minted}[escapeinside=||]{python}
+    @dataclass
+    class Type:
+        pass
+
+    @dataclass
+    class TypeVar(Type):
+        ...
+\end{minted}
+
+Every Featherweight Generic Java program can be represented by an AST.
+
+\subsection{Parsing}
+
+Parsing the programcode to an AST is done by using the python parser library \href{https://lark-parser.readthedocs.io/en/stable/}{Lark}.
+Lark is powerful library that can parse any context-free grammar.
+
+There are two parst when using Lark:
+First, the definition of the grammar.
+Because every Featherweight Generic Java program can now be represented as an AST the grammar rules are trivial.
+First a rule for identifier is created. This representation allows to easily changed what is allowed to be an identifier at any time later.
+Then for every class defined for the AST a rule is define recursively.
+Scond, for every rule in the grammar a function is defined wich gets the parsed rule as an argument and returns a instanciation of the respective class of the AST.
+The most outer rule is \inl{program} wich then returns the whole program represented by the AST starting with the class \inl{Program}.
+
+\begin{minted}[escapeinside=||]{python}
+    # grammar rules
+
+    identifier: ...
+
+    variable: identifier
+
+    [...]
+
+    # function for shaping
+
+    def variable(tuple_of_elemts_of_variable_rule):
+        (name, ) = tuple_of_elemts_of_variable_rule
+        return Variable(name)
+\end{minted}

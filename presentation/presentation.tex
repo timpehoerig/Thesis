@@ -1,0 +1,205 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Boadilla}
+\useoutertheme{infolines}
+\setbeamertemplate{navigation symbols}{}
+
+\input{../thesis/packages}
+\input{../thesis/commands}
+\input{../thesis/unicode}
+
+\title[Formal Dictionary Passing Transform]{Formal Proof of Type Preservation of the\\Dictionary Passing Transform for System F}
+\institute[Uni Freiburg]{Chair of Programming Languages, University of Freiburg}
+\author{Marius Weidner}
+
+\begin{document}
+
+\input{SystemF}
+\input{SystemFo}
+\input{DictionaryPassingTransform}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\section{Introduction}
+
+\begin{frame}[fragile]
+  \frametitle{Typeclasses}
+  \begin{block}{Overloading Equality in Haskell}
+    \begin{center}
+      ~
+      \begin{minted}[escapeinside=||]{haskell}
+ class Eq α where
+   eq :: α → α → Bool
+ 
+ instance Eq Nat where
+   eq x y = x ≐ y
+ instance Eq α ⇒ Eq [α] where
+   eq []       []       = True
+   eq (x : xs) (y : ys) = eq x y && eq xs ys 
+     
+ .. eq 42 0 .. eq [42, 0] [42, 0] ..
+      \end{minted}
+      ~
+    \end{center}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Desugaring Typeclasses}
+  \begin{block}{Overloading Equality in System \Fo}
+    \begin{center}
+      ~
+      \begin{minted}[escapeinside=||]{haskell}
+ |\Decl| eq in
+
+ |\Inst| eq : Nat → Nat → Bool 
+   = λx. λy. .. in
+ |\Inst| eq : ∀α. [eq : α → α → Bool] ⇒ [α] → [α] → Bool 
+   = Λα. ƛ(eq : α → α → Bool). λxs. λys. .. in
+    
+ .. eq 42 0 .. eq Nat [42, 0] [42, 0] .. 
+      \end{minted}
+      ~
+    \end{center}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Dictionary Passing Transform}
+  \begin{block}{Overloading Equality in System \Fo\ }
+    \begin{center}
+      \begin{minted}[escapeinside=||]{haskell}
+ |\Decl| eq in
+ |\Inst| eq : Nat → Nat → Bool 
+   = λx. λy. .. in
+ |\Inst| eq : ∀α. [eq : α → α → Bool] ⇒ [α] → [α] → Bool 
+   = Λα. ƛ(eq : α → α → Bool). λxs. λys. .. in
+ .. eq 42 0 .. eq Nat [42, 0] [42, 0] .. 
+      \end{minted}
+    \end{center}
+  \end{block}
+  \begin{block}{System \Fo\ Transformed to System F}
+    \begin{center}
+      \begin{minted}[escapeinside=||]{haskell}
+ let eq₁ : Nat → Nat → Bool 
+   = λx. λy. .. in
+ let eq₂ : ∀α. (α → α → Bool) → [α] → [α] → Bool 
+   = Λα. λeq₁. λxs. λys. .. in
+  
+ .. eq₁ 42 0 .. eq₂ Nat eq₁ [42, 0] [42, 0] .. 
+      \end{minted}
+    \end{center}
+  \end{block}
+\end{frame}
+
+\section{Agda Formalization}
+
+\begin{frame}[fragile]
+  \frametitle{Elegant Syntax Representations in Agda}
+  \begin{block}{System \Fo\ Syntax}
+    \begin{small}
+      \FoTerm
+    \end{small}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Substitution \& Renaming}
+  \begin{block}{Renaming}
+    \begin{small}
+      \begin{AgdaSuppressSpace}
+        \FRen
+        \phantom{}
+        \Fwk
+      \end{AgdaSuppressSpace}
+    \end{small}
+  \end{block}
+  \begin{block}{Substitution}
+    \begin{small}
+      \begin{AgdaSuppressSpace}
+        \FSub
+        \phantom{}
+        \Fsubs
+      \end{AgdaSuppressSpace}
+    \end{small}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Overloading Formalized}
+  \begin{block}{Context}
+    \begin{small}
+      \FoCtx
+    \end{small}
+  \end{block}
+  \begin{block}{Constraint Solving}
+    \begin{small}
+      \FoCstrSolve
+    \end{small}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Extrinsic Typing Rules}
+  \begin{block}{System \Fo\ Typing}
+    \begin{small}
+      \FoTyping
+    \end{small}
+  \end{block}
+\end{frame}
+
+\section{Agda Formalization of the Dictionary Passing Transform}
+\begin{frame}[fragile]
+  \frametitle{Fun Lemmas on Our Way to Type Preservation}
+  \begin{block}{Type Transform Preserves Renaming}
+    \DPTTypePresRen
+  \end{block}
+  \begin{block}{Type Transform Preserves Substitution}
+    \DPTTypePresSub
+  \end{block}
+  \begin{block}{Instance Resolution Transforms to Unqiue Variable}
+    \DPTOVarPresLookup
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Type Preservation of the Dictionary Passing Transform}
+  \begin{block}{Typed System \Fo\ tranforms to typed System F}
+    \begin{small}
+      \begin{AgdaSuppressSpace}
+        \DPTTermPres
+      \end{AgdaSuppressSpace}
+    \end{small}
+  \end{block}
+\end{frame}
+
+\section{Future Work}
+
+\begin{frame}[fragile]
+  \frametitle{Further Work: Hindley Milner \& Semantic Preservation}
+  \begin{block}{Overloading in Hindley Milner}
+    \
+    \begin{itemize}
+      \item Constraint abstractions cannot require poly types
+      \begin{enumerate}
+        \item Introduce sorts \Constr{mₛ} and \Constr{pₛ} in favour of single sort \Constr{τₛ}
+      \end{enumerate}
+      \item All instances must differ in the type of their first argument for each overloaded variable
+	    \begin{enumerate}
+        \item Preserves Algorithm W
+      \end{enumerate}
+    \end{itemize}
+    \
+  \end{block}
+  \begin{block}{Proving Semantic Preservation}
+    \
+    \begin{itemize}
+      \item Overloaded languages require typed semantics
+      \item Prove that, if \Sym{⊢e} \Data{↪} \Sym{⊢e'} then \\ \Constr{∃} \Constr{[} \Sym{e''} \Constr{]} (\Data{⊢e↪e'⇝e↪e'} \Sym{⊢e} \Data{↪*} \Sym{e''}) \Constr{×} (\Data{⊢e↪e'⇝e↪e'} \Sym{⊢e'} \Data{↪*} \Sym{e''}) 
+    \end{itemize}
+    \
+  \end{block}
+\end{frame}
+
+\end{document}
