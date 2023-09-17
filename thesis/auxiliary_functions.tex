@@ -1,8 +1,6 @@
 In the following sections all auxiliary functions that are used in the typeinference algorithm are specified.
 
-\subsection{Auxiliary Typing}
-
-\subsection{Subsitution}
+\subsection{Substitution}
 
 \begin{figure}[H]
     \begin{align*}
@@ -25,6 +23,21 @@ The second rule (2) is short for \inl{[T_1/X_1, ... , T_n/X_n]N}.
 The third rule (3) is short for \inl{[T_1/X_1, ... , T_n/X_n]N_1, ... , [T_1/X_1, ... , T_n/X_n]N_n}.
 \\
 These rules are implemented in different functions using pattern matching on the different type types.
+
+\subsection{Substitution on constraints}
+
+\begin{figure}[H]
+    \begin{align*}
+        1:& \quad \txn{T}{a}{C}\\
+        \\
+        2:& \quad \txn{a}{b}{C}
+    \end{align*}
+    \caption{Substitution on constraints}
+    \label{substitution_on_constraints}
+\end{figure}
+
+Substitution is also possible on constraint sets. Type variables can be replaced by types (1) or by other type variables (2).
+
 \subsection{Subtyping}
 
 \begin{figure}[H]
@@ -49,4 +62,32 @@ These rules are implemented in different functions using pattern matching on the
     \label{subtyping}
 \end{figure}
 
-\subsection{Auxiliary Functions}
+
+\subsection{Field Lookup}
+
+\begin{figure}[H]
+    \begin{align*}
+        \text{fields}(\text{Object}) = \{\}\\
+        \\
+        \frac{\class{S}{f} \quad \text{fields}(\tsxsn{T}{X}{N}) = \ot{U} \ \ot{g} }{\text{fields}(\nvt{C}{T}) = \ot{U} \ \ot{g}, \ \tsxsns{T}{X}{S} \ \ot{f}}
+    \end{align*}
+    \caption{Field Lookup}
+    \label{field_lookup_function}
+\end{figure}
+
+\subsection{Method Type Lookup}
+
+\subsection{Generic Supertype}
+
+\begin{figure}[H]
+    \begin{align*}
+        \text{genericSupertype} (\text(C), \ot{T}, \text{C} ) = \ot{T}\\
+        \\
+        \frac{ \text{class} \ \text{C} \yp \vartriangleleft \nvt{C'}{M} \ \{ ... \} }{ \text{genericSupertype} ( \text{C}, \ot{T}, \text{D} ) = \text{genericSupertype} ( \text{C'}, \tsxsns{T}{Y}{M}, \text{D} ) }
+    \end{align*}
+    \caption{Generic Supertype}
+    \label{generic_supertype}
+\end{figure}
+
+GenericSupertype takes two subtype related classes C and D and a list of types $\ot{T}$ as arguments. If the two classes are the same, then the list of types $\ot{T}$ is returned. Otherwise the function is recursively called with the superclass C' of C.
+However, the superclass C' may have different generic type variables than C. Therefore $\ot{T}$ is replaced by $\ot{M}$ where $\ot{M}$ are the generic type variables of C', but the generic type variables $\ot{Y}$ may occur in $\ot{M}$, therefore $\ot{T}$ is substituted for $\ot{Y}$ in $\ot{M}$.

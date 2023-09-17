@@ -48,7 +48,49 @@ HIER WAS ANDERS ALS IM PAPER
 \end{figure}
 
 In the paper ...  is a second case described where such an upper bound can be implied. This case cannot happen in this implementation because of the added rules to step 1.\\
-Now \inl{C'} again may contain or-constraints. Therefore the constraint set \inl{C'} is flattend once again and the following steps are done for each set \inl{C''}.
+Now \inl{C'} again may contain or-constraints. Therefore the constraint set \inl{C'} is flattend once again and the following steps are done for each simple-constraint set \inl{C''}.
 
 \subsubsection{Step 3}
-k
+The following rule is applied exhaustively to C''.
+
+\begin{figure}[H]
+    \begin{align*}
+        \frac{C \cup \{ \text{a} = \text{T} \}}{ \txn{T}{a}{C} \cup \{ \text{a} = \text{T} \} } \quad \text{a occurs in C but not in T}
+    \end{align*}
+    \caption{Subst}
+    \label{subst}
+\end{figure}
+
+\subsubsection{Step 4}
+If the constraint set C'' was changed by the rule \inl{subst}, the algorithm starts over with C'' from step 1.
+
+\subsubsection{Step 5}
+Now the constraint set C'' is in solved form. Constraints of the form one (a < b) do not bring any information with them, therefore these constraint can be eliminated.
+This is done by exhaustively applying the rules sub-elimination and erase.
+
+\begin{figure}[H]
+    \begin{align*}
+        \frac{C \cup \{ \text{C} \cup \text{a} < \text{b} \}}{ \txn{a}{b}{C} \cup \{ \text{b} = \text{a} \} } \quad &\text{sub elim}
+        \\
+        \\
+        \frac{\text{C} \cup \{ \text{a} = \text{a} \} }{ \text{C} } \quad &\text{erase}
+    \end{align*}
+    \caption{Sub elimination and erase}
+    \label{subelim_erase}
+\end{figure}
+
+\subsubsection{Step 6}
+The constraint set C is divided in $C_<$ and in $C_=$ where $C_<$ contains all subtype constraints and $C_=$ all equal constraints.
+Then new generic type variables $\ot{Y}$ are generated, one for each constraint in $C_<$. Now the substitution $\sigma$ and the mapping from $\ot{Y}$ to their upper bounds can be read of as follows:
+
+\begin{figure}[H]
+    \begin{align*}
+        \sigma &= \{ \text{b} \to \tsxsn{Y}{a}{T} \ | \ (\text{b} = \text{T}) \in C_= \} \cup \{ \ot{a} \to \ot{Y} \} \cup \{ \text{b} \to \text{X} \ | \ (\text{b} < \text{X}) \in C_< \}\\
+        \\
+        \gamma &= \{ \text{Y} \vartriangleleft \tsxsn{Y}{a}{N} \ | \ (\text{a} < \text{N}) \in C_< \}
+    \end{align*}
+    \caption{name}
+    \label{name}
+\end{figure}
+
+The pair of $\sigma$ and $\gamma$ is returned.
