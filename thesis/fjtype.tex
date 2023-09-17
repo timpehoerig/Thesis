@@ -25,6 +25,17 @@ The method type environment and the generated constraints together with the cons
 
 \subsection{Method Type}
 
+\begin{figure}[H]
+    \begin{align*}
+        \text{Type Method}(\prod, \text{C<} \ot{X} \text{>}, \text{m} ( \ot{x} ) \{ \ \text{return e}; \} ) = \\
+        \text{let} \yp \oto{T} = \prod ( \cm ) \\
+        ( \text{R}, \text{C} ) = \text{TYPEExpr} (( \prod; \{ \text{this} : \text{C<} \ot{X} \text{>} \} \cup \{ \ot{x} : \ot{T} \} ) , \text{e} ) \\
+        \text{in} \text{C} \cup \{ \text{R} < \text{T} \}
+    \end{align*}
+    \caption{Type Method}
+    \label{methodtype}
+\end{figure}
+
 \inl{MethodType} takes the method type environment, the class header \inl{C<\overline{X}>} of the class that is currently checked and the method definitions as arguments.
 It first brings the type signature of the current method in scope and then calls \inl{TypeExpression} on the expression \inl{e} inside the body of the method. In this call also a type environment for variables is created, where \inl{this} has the type C<X'> and the arguments of the method are read from the type signature brought into the scope earlier.
 \inl{TypeExpression} returns a tuple of the type \inl{R} of \inl{e} and the generated constraints. The generated constraints together with the constraint that \inl{R} must be a subtype of the return type of the method signature is returned.
@@ -34,17 +45,68 @@ The last function for generating constraints is \inl{Type Expression}. It takes 
 The expression \inl{e} is matched against the five possible forms for an expression and is handled differently for each.
 
 \subsection{Variable}
+
+\begin{figure}[H]
+    \begin{align*}
+        \texpr{\text{x}} = (\overline{\eta} (\text{x}), \emptyset)
+    \end{align*}
+    \caption{Type Variable}
+    \label{type_variable}
+\end{figure}
+
 If the expression is a simple variable it's type is looked up in the variable type environment and together with an empty set is returned. The empty set is returned because a simple variable does not generate any constraints.
 
 \subsection{Field Lookup}
-In case of a field lookup \inl{e.f} first the \inl{Type Expression} function recursively is called on the expression \inl{e}, returning a
+
+\begin{figure}[H]
+    \begin{align*}
+        \texpr{e.f} = \\
+        \text{let} ( \text{R}, C_R ) = \texpr{e}
+        \fresh{a}
+        \text{c} = \text{oc} \{ \{ \text{R} < \text{C<} \ot{a} \text{>}, \text{a} = \tsxsn{a}{X}{T}, \ot{a} < \tsxsns{a}{X}{N} \ | \ \fresh{a} \} \}
+    \end{align*}
+    \caption{Type Field Lookup}
+    \label{type_field_lookup}
+\end{figure}
+
+In case of a field lookup \inl{e.f} first the \inl{Type Expression} function is called recursively on the expression \inl{e}, returning a
 type R and a constraint set $C_R$. Now the difficult part is to find out which class the field \inl{f} belongs to. The solution is simple,
 just generate a constraint set for every class \inl{C} that has the field \inl{f} and put them together in one big or-constraint.
-The constraint set for one class consists of three constraints. One that constraints the returned type R to be a subtype
+The constraint set for one class consists of three kinds of constraints. One that constraints the returned type R to be a subtype
 of the class \inl{C} where the type variables of \inl{C} are replaced by some fresh type variables \inl{\overline{a}}. One that constraints the resulting type of the field lookup
 to be equal to the type of the corresponding field in \inl{C}. And another one that constraints every $a_i$ of \inl{\overline{a}} to be a subtype of the bounding type of the corresponding type variable it replaces.
 
 \subsection{Method Invocation}
+
+\begin{figure}[H]
+    \begin{align*}
+        \texpr{\text{e.m}( \ot{e} )} = \\
+        \text{let} ( \text{R}, C_R ) = \texpr{\text{e}} \\
+        \forall{e_i} \in \ot{e} : ( R_i, C_i ) = \texpr{e_i} \\
+        \fresh{a} \\
+        \text{c} = \text{oc} \{ \{ \text{R} < \text{C<} \ot{a} \text{>}, \text{a} = \tsxsnd{b}{Y}{a}{X}{T}, \ot{R} < \tsxsnsd{b}{Y}{a}{X}{T}, \\
+        \ot{b} < \tsxsnsd{b}{Y}{a}{X}{P}, \ot{a} < \tsxsns{a}{X}{N} \ | \ \ot{a}, \fresh{b} \} \\
+        | \ ( \cm : \yp \oto{T} ) \in \prod \}
+    \end{align*}
+    \caption{Type Method Lookup}
+    \label{type_method_lookup}
+\end{figure}
+
 A method invocation imposes the same problem that a field lookup did and therefore is solved in a similar way. But first for the
-expression the method \inl{m} is invoked on and every expression that is passed as an argument to \inl{m} \inl{Type Expression}
-recursively is called on. Then for every method signature of a method with name \inl{m} in the method type environment an constraint set is generated.
+expression that the method \inl{m} is invoked on and every expression that is passed as an argument to \inl{m} \inl{Type Expression}
+is called recursively on. Then for every method signature of a method with name \inl{m} in the method type environment an constraint
+set is generated. This set of constraints contains five kinds of constraint, three of them are very similar to the ones generated for a
+field lookup except that two different kinds of fresh type variables are created. One for every generic type variable the class has and
+one for every generic type variable the method signature has. One that constraints the type of the arguments for m to be subtypes of the
+argument types imposed by the method signature. And the last one that constraints all fresh type variables generated for the type variables
+of the method signature to be a subtype of the corresponding bounding type.
+
+\subsection{Object Creation}
+
+The constraints generated for an object creation are rather simple. \inl{TYPEExpr} is called recursively for every argument. Then the types of all
+fields of the class that the generated object is an instance of are brought in scope via the inl{fields} function therefor for every field a fresh type variable is introduced.
+Those fresh type variables must be subtypes of the corresponding upper bound and all returned types of the recursive call have to be subtypes of the field they are bound to.
+
+\subsection{Cast}
+
+For a cast the \inl{TypeExpr} is called recursive on the expression of that cast but instead of returning the type that call returns, the type the expression is casted to together with the constraints generated by the recursive call are returned.

@@ -1,1 +1,54 @@
-unify
+\inl{FJUnify} is the function that tries to solve the constraints. This may lead to no, one or more possible solutions. If there is more than one solution simply the first solution is chosen. If there is no solution the overall algorithm backtracks to the last class where there was more than one solution and assumes the next one, then starts again from there.
+A solution is found if the constraint set can be transformed into solved form. A constraint set is in solved from if it only contains constraints of the following four forms:
+
+\begin{figure}[H]
+    \begin{align*}
+        1.& \quad \text{a} < \text{b}\\
+        \\
+        2.& \quad \text{a} = \text{b}\\
+        \\
+        3.& \quad \text{a} < \text{C<} \ot{T} \text{>}\\
+        \\
+        4.& \quad \text{a} = \text{C<} \ot{T} \text{>} \ \text{with a} \notin \ot{T}\\
+        \\
+        \text{No variable is allowed to occur } & \text{twice on the left side of rules of the form three and four.}
+    \end{align*}
+    \caption{Solved Form}
+    \label{solved_form}
+\end{figure}
+
+\inl{Unify} takes two arguments: First the constraint set to solve. Second, a mapping from type variables \inl{X} to their upper bound \inl{N} this mapping represents the type variables and their upper bound of the current class that the overall algorithm is currently checking.
+In order to not need a special treatment for these type variables all type variables $X_i$ are treated as parameterless classes $X_i$<> with superclass $N_i$.
+The constraint set \inl{C} given to \inl{Unify} may contain multiple or-constraints. Flattening them to constraint sets \inl{C'} that only contain simple-constraints leads to multiple \inl{C'} that together cover all possible combinations of constraints.
+The following steps are done for the first \inl{C'} if this leads to a solution, \inl{TypeInference} continues with the next class. Otherwise, the next \inl{C'} is tried.
+
+\subsubsection{Step 1}
+The following rules are applied exhaustively to \inl{C'}.
+
+\subsubsection{Step 2}
+Now every constraint is either in solved form or in one of the following: \\
+1. $\{ \nvt{C}{T} < \nvt{D}{U} \}$ where \inl{C} cannot be a subtype of \inl{D}, therefore \inl{C'} has no solution.\\
+2. $\{ a < \nvt{C}{T}, \ a < \nvt{D}{U} \}$ where \inl{C} cannot be a subtype of \inl{D} and vise versa. So \inl{C'} has no solution.\\
+3. $\{ \nvt{C}{T} < a \}$\\
+\\
+In the last case the non variable type $\nvt{C}{T}$ has an upper bound which is not a non variable type but a type variable which is not allowed in Featherweight Generic Java.
+This is solved by first searching the upper bound constraint of \inl{a} if no such constraint exists \inl{Object} is chosen as the upper bound. Then for every possible class
+from $\nvt{C}{T}$ up to the upper bound an or-constraint is generated which then replaces the one or two constraints it was generated from.
+The or-constraint is generated as follows:
+\\
+HIER WAS ANDERS ALS IM PAPER
+
+\begin{figure}[H]
+    \begin{align*}
+        \text{expandLB} ( \nvt{C}{T} < a, \ a < \nvt{D}{U} ) = \{ \{ a = \tsxsn{T}{X}{N} \} \ | \ \Delta \vdash \nvt{C}{X} < N, \ \Delta \vdash N < \nvt{D}{P} \}\\
+        \text{where} \ \ot{P} \ \text{is \ determined \ by } \Delta \vdash \nvt{C}{X} < \nvt{D}{P} \ \text{and} \ \tsxsns{T}{X}{P} = \ot{U}
+    \end{align*}
+    \caption{expandLB}
+    \label{expandlb}
+\end{figure}
+
+In the paper ...  is a second case described where such an upper bound can be implied. This case cannot happen in this implementation because of the added rules to step 1.\\
+Now \inl{C'} again may contain or-constraints. Therefore the constraint set \inl{C'} is flattend once again and the following steps are done for each set \inl{C''}.
+
+\subsubsection{Step 3}
+k

@@ -1,0 +1,7 @@
+Python is not a functional language, therefore data structures like lists, dictionaries and sets are mutable. That imposes a problem since mutable data structures are not hashable but entries of sets must be. Therefore having a set of sets is not possible.
+In order to solve this problem all sets, lists and dictionaries are made immutable by using frozenlists, frozensets and frozendictionaries. As frozensets come with the default library they can be used easily. In order to have frozenlists and frozendicts the python libraries \inl{FrozenList} and \inl{frozendict} are used.
+
+
+\subsection{FJType}
+The implementation of the constraint generation is straight forward. Because every functions is described in pseudo code most of the functions can easily be translated into python code.
+Creating fresh type variables is simply done by creating a generator at the beginning that creates type variables of the form \inl{x_0, x_1, ...} where \inl{x} is a string given as argument to the generator instantiation.
