@@ -16,7 +16,7 @@ The entry point for every full program is the class \inl{Program}.
         expression: Expression
 \end{minted}
 
-The class \inl{Program} has two fields: \inl{CT} for Class Table a mapping from every class name to it's definition. Second, \inl{expression} an expression to be evaluated.
+The class \inl{Program} has two fields: \inl{CT} for Class Table a mapping from every class name to its definition. Second, \inl{expression} an expression to be evaluated.
 
 The implementation of types, classdefinitions, methoddefinitions and expressions are straight forward adaptations of their formal definitions in the paper "Global Type Inference for Featherweight Generic
 Java".
@@ -33,8 +33,8 @@ For example the implementation for classdefinition \inl{ClassDef}:
 
 There is no field for a constructor because as mentioned earlier constructors are dropped in this implemenatation.
 
-The implemenatations for types and expressions differs a bit. Because there are different types and different expressions, for both first a plain class with no fields is defined \inl{Type} and \inl{Expressions} from wich then all the different kinds of types or expressions inherit.
-Therefore it is possible to match against types and expressions.
+The implemenatations for types and expressions differs a bit. Because there are different types and different expressions, for both first a plain class with no fields is defined \inl{Type} and \inl{Expressions} from which then all the different kinds of types or expressions inherit.
+As result it is possible to match against types and expressions.
 
 \begin{minted}[escapeinside=||]{python}
     @dataclass

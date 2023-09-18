@@ -1,3 +1,2 @@
-#!/bin/bash
-open thesis.pdf
-latexmk -pvc -pdf -shell-escape thesis.tex
+open elaboration.pdf &
+latexmk -pvc -pdf -shell-escape -e '$pdflatex=q/xelatex %O -interaction=nonstopmode %S/' thesis.tex

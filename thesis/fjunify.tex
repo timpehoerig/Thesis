@@ -1,21 +1,17 @@
 \inl{FJUnify} is the function that tries to solve the constraints. This may lead to no, one or more possible solutions. If there is more than one solution simply the first solution is chosen. If there is no solution the overall algorithm backtracks to the last class where there was more than one solution and assumes the next one, then starts again from there.
 A solution is found if the constraint set can be transformed into solved form. A constraint set is in solved from if it only contains constraints of the following four forms:
 
-\begin{figure}[H]
-    \begin{align*}
-        1.& \quad \text{a} < \text{b}\\
-        \\
-        2.& \quad \text{a} = \text{b}\\
-        \\
-        3.& \quad \text{a} < \text{C<} \ot{T} \text{>}\\
-        \\
-        4.& \quad \text{a} = \text{C<} \ot{T} \text{>} \ \text{with a} \notin \ot{T}\\
-        \\
-        \text{No variable is allowed to occur } & \text{twice on the left side of rules of the form three and four.}
-    \end{align*}
-    \caption{Solved Form}
-    \label{solved_form}
-\end{figure}
+\begin{align*}
+    1.& \quad \text{a} < \text{b}\\
+    \\
+    2.& \quad \text{a} = \text{b}\\
+    \\
+    3.& \quad \text{a} < \text{C<} \ot{T} \text{>}\\
+    \\
+    4.& \quad \text{a} = \text{C<} \ot{T} \text{>} \ \text{with a} \notin \ot{T}\\
+    \\
+    \text{No variable is allowed to occur } & \text{twice on the left side of rules of the form three and four.}
+\end{align*}
 
 \inl{Unify} takes two arguments: First the constraint set to solve. Second, a mapping from type variables \inl{X} to their upper bound \inl{N} this mapping represents the type variables and their upper bound of the current class that the overall algorithm is currently checking.
 In order to not need a special treatment for these type variables all type variables $X_i$ are treated as parameterless classes $X_i$<> with superclass $N_i$.
@@ -25,9 +21,35 @@ The following steps are done for the first \inl{C'} if this leads to a solution,
 \subsubsection{Step 1}
 The following rules are applied exhaustively to \inl{C'}.
 
+\begin{figure}[H]
+    \begin{align*}
+        &\frac{\cand \{ \text{a} < \nvt{C}{T}, \ \text{a} < \nvt{D}{V} \} }{ \cand \{ a < \nvt{C}{T}, \ \nvt{C}{T} < \nvt{D}{V} \} } \quad \Delta \vdash \nvt{C}{X} <: \nvt{D}{N}\\
+        \\
+        &\frac{\cand \{ \nvt{C}{T} < \text{a}, \ \nvt{D}{V} < \text{a} \} }{ \cand \nvt{C}{T} < \nvt{D}{V}, \ \nvt{D}{V} < \text{a} } \quad \Delta \vdash \nvt{C}{X} <: \nvt{D}{N}\\
+        \\
+        &\frac{\cand \{ \text{a} < \nvt{C}{T}, \ \text{b} <^* \text{a}, \text{b} < \nvt{D}{U}  \} }{ \cand \{ \text{a} < \nvt{C}{T}, \ \text{b} <^* \text{a}, \ \text{b} < \nvt{D}{U}, \ \text{b} < \nvt{C}{T} \} }\\
+        \\
+        &\frac{anders}{herum}\\
+        \\
+        &\frac{\cand \{ \nvt{C}{T} < \nvt{D}{U} \} }{ \cand \{ \text{D<} \tsxsns{T}{X}{N} \text{>} = \nvt{D}{U} \} } \Delta \vdash \nvt{C}{X} <: \nvt{D}{N}\\
+        \\
+        &\frac{\cand \{ \nvt{D}{T} = \nvt{D}{U} \} }{\cand \{ \ot{T} = \ot{U} \} }\\
+        \\
+        &\frac{\cand \{ \text{a}_1 < \text{a}_2, \ \text{a}_2 < \text{a}_3, \ ..., \ \text{a}_n < \text{a}_1 \} }{\cand \{ \text{a}_1 = \text{a}_2, \ \text{a}_2 = \text{a}_3, \ ... \} } \text{n} > 0\\
+        \\
+        &\frac{\cand \{ \text{a} = \text{a} \} }{\text{C}}\\
+        \\
+        &\frac{\cand \{ \text{N} = \text{a} \} }{\cand \{ \text{a} = \text{N} \} }
+    \end{align*}
+    \caption{swap}
+    \label{swap}
+\end{figure}
+
+For \inl{match} and \inl{adopt} here also the dual rule is defined. This makes it later easier to detect illegal upper bounds because then only the highest type can have an illegal upper bound which can easily be detected.
+
 \subsubsection{Step 2}
 Now every constraint is either in solved form or in one of the following: \\
-1. $\{ \nvt{C}{T} < \nvt{D}{U} \}$ where \inl{C} cannot be a subtype of \inl{D}, therefore \inl{C'} has no solution.\\
+1. $\{ \nvt{C}{T} < \nvt{D}{U} \}$ where \inl{C} cannot be a subtype of \inl{D}, as result \inl{C'} has no solution.\\
 2. $\{ a < \nvt{C}{T}, \ a < \nvt{D}{U} \}$ where \inl{C} cannot be a subtype of \inl{D} and vise versa. So \inl{C'} has no solution.\\
 3. $\{ \nvt{C}{T} < a \}$\\
 \\
@@ -35,62 +57,44 @@ In the last case the non variable type $\nvt{C}{T}$ has an upper bound which is 
 This is solved by first searching the upper bound constraint of \inl{a} if no such constraint exists \inl{Object} is chosen as the upper bound. Then for every possible class
 from $\nvt{C}{T}$ up to the upper bound an or-constraint is generated which then replaces the one or two constraints it was generated from.
 The or-constraint is generated as follows:
-\\
-HIER WAS ANDERS ALS IM PAPER
 
-\begin{figure}[H]
-    \begin{align*}
-        \text{expandLB} ( \nvt{C}{T} < a, \ a < \nvt{D}{U} ) = \{ \{ a = \tsxsn{T}{X}{N} \} \ | \ \Delta \vdash \nvt{C}{X} < N, \ \Delta \vdash N < \nvt{D}{P} \}\\
-        \text{where} \ \ot{P} \ \text{is \ determined \ by } \Delta \vdash \nvt{C}{X} < \nvt{D}{P} \ \text{and} \ \tsxsns{T}{X}{P} = \ot{U}
-    \end{align*}
-    \caption{expandLB}
-    \label{expandlb}
-\end{figure}
+\begin{align*}
+    \text{expandLB} ( \nvt{C}{T} < a, \ a < \nvt{D}{U} ) = \{ \{ a = \tsxsn{T}{X}{N} \} \ | \ \Delta \vdash \nvt{C}{X} < N, \ \Delta \vdash N < \nvt{D}{P} \}\\
+    \text{where} \ \ot{P} \ \text{is \ determined \ by } \Delta \vdash \nvt{C}{X} < \nvt{D}{P} \ \text{and} \ \tsxsns{T}{X}{P} = \ot{U}\\
+\end{align*}
 
-In the paper ...  is a second case described where such an upper bound can be implied. This case cannot happen in this implementation because of the added rules to step 1.\\
-Now \inl{C'} again may contain or-constraints. Therefore the constraint set \inl{C'} is flattend once again and the following steps are done for each simple-constraint set \inl{C''}.
+In the paper ...  a second case is described where such an upper bound can be implied. This case cannot happen in this implementation because of the added reverse rules to step 1.\\
+Now \inl{C'} again may contain or-constraints. The constraint set \inl{C'} is flattened once again and the following steps are done for each simple-constraint set \inl{C''}.
 
 \subsubsection{Step 3}
 The following rule is applied exhaustively to C''.
 
-\begin{figure}[H]
-    \begin{align*}
-        \frac{C \cup \{ \text{a} = \text{T} \}}{ \txn{T}{a}{C} \cup \{ \text{a} = \text{T} \} } \quad \text{a occurs in C but not in T}
-    \end{align*}
-    \caption{Subst}
-    \label{subst}
-\end{figure}
+\begin{align*}
+    \frac{C \cup \{ \text{a} = \text{T} \}}{ \txn{T}{a}{C} \cup \{ \text{a} = \text{T} \} } \quad \text{a occurs in C but not in T}
+\end{align*}
 
 \subsubsection{Step 4}
 If the constraint set C'' was changed by the rule \inl{subst}, the algorithm starts over with C'' from step 1.
 
 \subsubsection{Step 5}
-Now the constraint set C'' is in solved form. Constraints of the form one (a < b) do not bring any information with them, therefore these constraint can be eliminated.
+Now the constraint set C'' is in solved form. Constraints of the first form (a < b) do not bring any information with them, thus these constraint can be eliminated.
 This is done by exhaustively applying the rules sub-elimination and erase.
 
-\begin{figure}[H]
-    \begin{align*}
-        \frac{C \cup \{ \text{C} \cup \text{a} < \text{b} \}}{ \txn{a}{b}{C} \cup \{ \text{b} = \text{a} \} } \quad &\text{sub elim}
-        \\
-        \\
-        \frac{\text{C} \cup \{ \text{a} = \text{a} \} }{ \text{C} } \quad &\text{erase}
-    \end{align*}
-    \caption{Sub elimination and erase}
-    \label{subelim_erase}
-\end{figure}
+\begin{align*}
+    \frac{C \cup \{ \text{C} \cup \text{a} < \text{b} \}}{ \txn{a}{b}{C} \cup \{ \text{b} = \text{a} \} } \quad &\text{sub elim}
+    \\
+    \\
+    \frac{\text{C} \cup \{ \text{a} = \text{a} \} }{ \text{C} } \quad &\text{erase}
+\end{align*}
 
 \subsubsection{Step 6}
 The constraint set C is divided in $C_<$ and in $C_=$ where $C_<$ contains all subtype constraints and $C_=$ all equal constraints.
 Then new generic type variables $\ot{Y}$ are generated, one for each constraint in $C_<$. Now the substitution $\sigma$ and the mapping from $\ot{Y}$ to their upper bounds can be read of as follows:
 
-\begin{figure}[H]
-    \begin{align*}
-        \sigma &= \{ \text{b} \to \tsxsn{Y}{a}{T} \ | \ (\text{b} = \text{T}) \in C_= \} \cup \{ \ot{a} \to \ot{Y} \} \cup \{ \text{b} \to \text{X} \ | \ (\text{b} < \text{X}) \in C_< \}\\
-        \\
-        \gamma &= \{ \text{Y} \vartriangleleft \tsxsn{Y}{a}{N} \ | \ (\text{a} < \text{N}) \in C_< \}
-    \end{align*}
-    \caption{name}
-    \label{name}
-\end{figure}
+\begin{align*}
+    \sigma &= \{ \text{b} \to \tsxsn{Y}{a}{T} \ | \ (\text{b} = \text{T}) \in C_= \} \cup \{ \ot{a} \to \ot{Y} \} \cup \{ \text{b} \to \text{X} \ | \ (\text{b} < \text{X}) \in C_< \}\\
+    \\
+    \gamma &= \{ \text{Y} \vartriangleleft \tsxsn{Y}{a}{N} \ | \ (\text{a} < \text{N}) \in C_< \}\\
+\end{align*}
 
 The pair of $\sigma$ and $\gamma$ is returned.

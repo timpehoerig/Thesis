@@ -1,4 +1,4 @@
-Python is not a functional language, therefore data structures like lists, dictionaries and sets are mutable. That imposes a problem since mutable data structures are not hashable but entries of sets must be. Therefore having a set of sets is not possible.
+Python is not a functional language, hence data structures like lists, dictionaries and sets are mutable. That imposes a problem because mutable data structures are not hashable but entries of sets must be. Having a set of sets is not possible.
 In order to solve this problem all sets, lists and dictionaries are made immutable by using frozenlists, frozensets and frozendictionaries. As frozensets come with the default library they can be used easily. In order to have frozenlists and frozendicts the python libraries \inl{FrozenList} and \inl{frozendict} are used.\\
 One important environment that is passed to almost every functions but never mentioned in the abstract definitions is the \inl{Class Table}. The Class Table or short CT is a mapping from class names to their class definitions. This environment is filled at the parsing step and never changed afterwards. This environment makes it easy to have full access to any class at any time only by having their name.\\
 
@@ -6,6 +6,90 @@ One important environment that is passed to almost every functions but never men
 
 \subsection{FJType}
 The implementation of the constraint generation is straight forward. Because every functions is described in pseudo code most of the functions can easily be translated into python code. \\
-Creating fresh type variables is simply done by creating a generator at the beginning that creates type variables of the form \inl{x_0, x_1, ...} where \inl{x} is a string given as argument to the generator instantiation. \\
+Creating fresh type variables is simply done by instantiating a generator at the beginning that generates type variables of the form \inl{x_0, x_1, ...} where \inl{x} is a string given as argument to the generator instantiation. \\
 
 \subsection{FJUnify}
+
+\subsubsection{Resolving or-constraints}
+Converting a constraint set \inl{C} which contains simple-constraint as well as or-constraints equals a Cartesian product with n sets, where n is the number of or-constraints in \inl{C}.
+But first the constraint set \inl{C} is divided in two parts. One that contains all simple-constraints and one that contains all or-constraints.
+Then the Cartesian product of all or-constraint is calculated. To each result all simple constraints are added. This is exponential in the number of or-constraint sets, thus this is implemented as a generator that yields one solution after another.
+
+\subsubsection{Treating type variables as parameterless classes}
+All rules of step 1 and following, would also apply for generic type variables. So every rule also must be defined for them, not just tripling the code but also imposing some nasty edge cases. In order to solve this generic type variables are treated as parameterless classes with their upper bounds being now their superclasses. One important thing here is, that those new classes are not added to the Class Table, instead they are stored in an extra environment. When looking up classes in the Class Table an extra check must be done if the class is in it, if not the superclass can be read out of the new environment.
+The transformation from  generic type variables to parameterless classes and backwards is done in two extra functions that take and return a constraint set.
+
+\subsubsection{Exhaustively applying rules}
+There is not really a nice way in python to do such a thing. The most simple way to do so is to have a while-loop on a condition variable \inl{changed} that is True at the beginning but changes to False as soon as the while-loop is entered. Then, if one rule applies and changes something this condition variable is set to True. That alone may not seem too bad but the combination of two nested for-loops to go over every possible combination of constraints, while changing the constraint set the loop is going through results in some nasty code that is not the most efficient.
+
+\subsubsection{Rules in step 1}
+There are two kind of rule. Some that take one and some that take two constraints as pre-condition. This forces two for-loops to go over every possible combination. Deciding which rule to apply is done by pattern matching against sub- or equal-constraints and on the types of the constraint elements. Because some patterns are ambiguous it is important to take the order into account.
+
+\subsubsection{ExpandLB}
+The implementation of expandLB differs from the idea the original paper imposes. Having constraints such that (a < $\nvt{C}{T}$) and (a <* b) so it is possible that ($\nvt{C}{T}$ < b) is implied is not possible. because the dual rules of DOES IT?
+
+\subsection{Example}
+
+Consider the following Featherweight Generic Java program without any type annotation for methods:
+
+\begin{minted}[escapeinside=||]{java}
+    class Pair<X extends Object<>, Y extends Object<>> extends Object<> {
+        X fst;
+        Y snd;
+
+        setfst(newfst) {
+            return new Pair(newfst, this.snd);
+        }
+    }
+
+    new Object()
+\end{minted}
+
+This example only contains one class definition, thus \inl{FJType} and \inl{Unify} run exactly once. Still, \inl{Unify} may return more than one solution.
+First, we look at \inl{FJType} and then at \inl{Unify}.
+\\
+\\
+In the following the fresh introduced type variables have the form $a_0$, $a_1$, ... the number respects the order in which they are introduced. In the following description the variables do not occur in the right order. This is because the algorithm is recursive and explaining the algorithm is easier
+if some information is given that in the algorithm itself would be known later. The name of the type variables does not matter and could also be different. This is simply done to showcase the order of which the type variables are introduced.
+
+\subsubsection{FJType}
+\inl{FJType} takes two arguments. First, the method type environment, because \inl{Pair} is the first class to be processed this environment is empty. Second, the class definition of \inl{Pair}.
+Now for every method defined in \inl{Pair} new type variables are introduced. Here the only method is \inl{setfst} which takes one argument, thus two variables are introduced, one for the return type and one for the argument type. This type annotation is added to the method type environment.
+Because there are no other definitions of the method \inl{setfst} in any superclasses of \inl{Pair} the only constraints for both variables are that they need to be subtypes of \inl{Object}. Thus the constraint set and the method type environment look like this:
+
+\begin{align*}
+    \lambda &= \{ ( \cxnm{Pair}{X}{Object}{setfst} ): \ \text{a}_1 \to \text{a}_0 \}\\
+    \text{C} &= \{ \text{a}_0 < \text{Object}, \ \text{a}_1 < \text{Object} \}\\
+\end{align*}
+
+Next for every method defined in \inl{Pair} the function \inl{TYPEMethod} with the new type environment is called.
+In this case only once for the method \inl{setfst}. \inl{TYPEMethod} creates the local variable type environment where \inl{this} has type \inl{Pair<X, Y>} (\inl{this} always refers to the class it is in which in this case is \inl{Pair}) and \inl{newfst} has type $a_1$.
+
+Then the body of \inl{setfst} is processed. The body of a method always is one expression which here is an object creation of \inl{Pair}.
+First we get the types of the fields of \inl{Pair<X, Y>} while substituting \inl{X} and \inl{Y} by some fresh type variables $a_5$ and $a_6$. Both of them need to be subtypes of \inl{Object}. Here, because all fields are defined in the current class this result in the types $a_5$ and $a_6$. Now we process the arguments of \inl{new Pair(newfst, this.snd)}.
+The first argument is \inl{newfst} which is a simple variable. We know it must be a subtype of $a_5$, if we lookup the type of the variable \inl{newfst} in the variable type environment we obtain that \inl{newfst} has type $a_1$. Thus generating the constraint $a_1$ < $a_5$.
+The second argument is \inl{this.snd} which is a field lookup. We again know it must be a subtype of $a_6$. A fresh type variable $a_2$ is introduced representing the type of \inl{this.snd}, thus we obtain the constraint $a_2$ < $a_6$.
+$a_2$ represents \inl{this.snd} which can be further constrained. We know \inl{this} is a simple variable of type \inl{Pair<X, Y>}.
+Now for every class where the field \inl{snd} is defined we generate an or-constraint. Here \inl{Pair<X, Y>} is the only class with the field \inl{snd}. Thus in this or-constraint \inl{this} is a subtype of \inl{Pair<X, Y>} where we substitute some fresh type variables for \inl{X} and \inl{Y} resulting in the constraint \inl{Pair<X, Y>} < \inl{Pair<}$a_3$, $a_4$\inl{>}.
+In the case that the field \inl{snd} refers to the class \inl{Pair<}$a_3$, $a_4$\inl{>} we obtain that $a_2$ is equal to $a_3$. Both $a_3$ and $a_4$ need to be subtypes of \inl{Object}.
+Now the constraint set looks like this:
+
+\begin{align*}
+    \text{C} = \{& \text{a}_0 < \text{Object}, \ \text{a}_1 < \text{Object}, \\
+    &\text{a}_1 < \text{a}_5, \ \text{a}_5 < \text{Object}, \ \text{a}_2 < \text{a}_6, \ \text{a}_6 < \text{Object}, \\
+    &(( \text{Pair<X, Y>} < \text{Pair<} \text{a}_3, \text{a}_4 \text{>}, \ \text{a}_2 = \text{a}_4, \ \text{a}_3 < \text{Object}, \ \text{a}_4 < \text{Object} ))\\
+    &\}\\
+\end{align*}
+
+We know that \inl{setfst} returns a \inl{Pair}, we introduced the type variables $a_5$ and $a_6$ to represent the types of the parameters of the object creation, hence the return type of \inl{setfst} is \inl{Pair<}$a_5$, $a_6$\inl{>}.
+At the beginning we said the return type of \inl{newfst} is $a_0$ these two things lead to the last constraint \inl{Pair<}$a_5$, $a_6$\inl{>} < $a_0$.
+Now we have the full method type environment and the full constraint set:
+
+\begin{align*}
+    \lambda = \{& ( \cxnm{Pair}{X}{Object}{setfst} ): \ \text{a}_1 \to \text{a}_0 \}\\
+    \text{C} = \{& \text{a}_0 < \text{Object}, \ \text{a}_1 < \text{Object}, \\
+    &\text{a}_1 < \text{a}_5, \ \text{a}_5 < \text{Object}, \ \text{a}_2 < \text{a}_6, \ \text{a}_6 < \text{Object}, \\
+    &(( \text{Pair<X, Y>} < \text{Pair<} \text{a}_3, \text{a}_4 \text{>}, \ \text{a}_2 = \text{a}_4, \ \text{a}_3 < \text{Object}, \ \text{a}_4 < \text{Object} )),\\
+    &\text{Pair<}\text{a}_5, \text{a}_6\text{>} < \text{a}_0\\
+    &\}\\
+\end{align*}
