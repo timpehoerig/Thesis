@@ -58,7 +58,7 @@ Now for every method defined in \inl{Pair} new type variables are introduced. He
 Because there are no other definitions of the method \inl{setfst} in any superclasses of \inl{Pair} the only constraints for both variables are that they need to be subtypes of \inl{Object}. Thus the constraint set and the method type environment look like this:
 
 \begin{align*}
-    \lambda &= \{ ( \cxnm{Pair}{X}{Object}{setfst} ): \ \text{a}_1 \to \text{a}_0 \}\\
+    \lambda &= \{ ( \cxnm{Pair}{X}{Object}{setfst} ): \ [\text{a}_1] \to \text{a}_0 \}\\
     \text{C} &= \{ \text{a}_0 < \text{Object}, \ \text{a}_1 < \text{Object} \}\\
 \end{align*}
 
@@ -86,10 +86,65 @@ At the beginning we said the return type of \inl{newfst} is $a_0$ these two thin
 Now we have the full method type environment and the full constraint set:
 
 \begin{align*}
-    \lambda = \{& ( \cxnm{Pair}{X}{Object}{setfst} ): \ \text{a}_1 \to \text{a}_0 \}\\
+    \lambda = \{& ( \cxnm{Pair}{X}{Object}{setfst} ): \ [\text{a}_1] \to \text{a}_0 \}\\
     \text{C} = \{& \text{a}_0 < \text{Object}, \ \text{a}_1 < \text{Object}, \\
     &\text{a}_1 < \text{a}_5, \ \text{a}_5 < \text{Object}, \ \text{a}_2 < \text{a}_6, \ \text{a}_6 < \text{Object}, \\
     &(( \text{Pair<X, Y>} < \text{Pair<} \text{a}_3, \text{a}_4 \text{>}, \ \text{a}_2 = \text{a}_4, \ \text{a}_3 < \text{Object}, \ \text{a}_4 < \text{Object} )),\\
     &\text{Pair<}\text{a}_5, \text{a}_6\text{>} < \text{a}_0\\
     &\}\\
+\end{align*}
+
+Now we have all constraints and method types that we need and can start to solve them.
+
+\subsubsection{Unify}
+The first thing that \inl{Unify} does is to resolve the or-constraints. Here we have only one possibility in the or-constraint, thus we can just add all constraints together.
+Before we go on we need to transform all type variables to parameterless classes (for example: $\text{X} \to \nvtt{X}{}$).
+Then we continue with step 1. The only rule that applies to anything is \inl{adapt}.
+
+\begin{align*}
+    \frac{\cand \{ \nvtt{Pair}{\nvtt{X}{}, \nvtt{Y}{}} < \nvtt{Pair}{\fa{3}, \fa{4}} \} }{\cand \{ \nvtt{Pair}{\nvtt{X}{}, \nvtt{Y}{}} = \nvtt{Pair}{\fa{3}, \fa{4}} \} } \quad \text{adapt}
+\end{align*}
+
+Now we can resolve this further with \inl{reduce}:
+
+\begin{align*}
+    \frac{\cand \{ \nvtt{Pair}{\nvtt{X}{}, \nvtt{Y}{}} = \nvtt{Pair}{\fa{3}, \fa{4}} \} }{\cand \{ \nvtt{X}{} = \fa{3}, \ \nvtt{Y}{} = \fa{4} \} } \quad \text{reduce}
+\end{align*}
+
+Then with \inl{swap} the two resolved rules are swapped such that the type variables \inl{a} occur on the left hand side.
+No other rules apply and we continue with step 2.
+
+We find the constraint $\nvtt{Pair}{\fa{5}, \ \fa{6}} < \fa{0}$ which has a type variable as upper bound and thus requires us to resolve it with \inl{expandLB}. We search the upper bound constraint for $a_0$ which is $\fa{0} < \nvtt{Object}{}$.
+Next we check if $\nvtt{Pair}{\fa{5}, \ \fa{6}}$ can be a subtype of \inl{Object} which is trivially satisfied (because everything is a subtype of \inl{Object}) and thus we know $a_0$ is either $\nvtt{Pair}{\fa{5}, \ \fa{6}}$ or \inl{Object}. We add those two constraints as an or-constraint
+to the constraint set, but now we have again or-constraints and thus have to flatten the constraint set once again. However, this time the or-constraint has two possible constraint sets resulting overall in two different simple constraint sets which we both have to consider one after the other.
+Here it is important to look at the constraint set that is more specific first. We continue with step 3 and the first simple-constraint set. We can substitute in three different cases: $\fa{2}$ = $\fa{4}$, $\fa{3}$ = $\nvtt{X}{}$ and $\fa{4}$ =  $\nvtt{Y}{}$.
+These substitutions change our constraint set and we start again from step 1 with the following constraint set:
+
+\begin{align*}
+    \text{C} = \{& \nvtt{Y}{} < \fa{6}, \ \fa{1} < \fa{5}, \ \fa{6} < \nvtt{Object}{}, \ \fa{1} < \nvtt{Object}{}, \\
+    &\nvtt{X}{} < \nvtt{Object}{}, \ \fa{4} = \nvtt{Y}{}, \ \nvtt{Y}{} < \nvtt{Object}{} \ \fa{0} = \nvtt{Pair}{\fa{5}, \ \fa{6}}, \\
+    &\fa{3} = \nvtt{X}{}, \fa{2} = \nvtt{Y}{}, \ \fa{5} < \nvtt{Object}{} \\
+    &\}
+\end{align*}
+
+With adapt and reduce we can kick out both, $\nvtt{X}{}$ < $\nvtt{Object}{}$ and $\nvtt{Y}{}$ < \nvtt{Object}{}. Then we continue with step 2.
+Once again we find a constraint that has a type variable as upper bound, this time $\nvtt{Y}{}$ < $\fa{6}$ the corresponding upper bound is $\fa{6}$ < $\nvtt{Object}{}$.
+Resolving this with \inl{expandLB} gives again two constraint sets, one with $\fa{6}$ = $\nvtt{Y}{}$ and one with $\fa{6}$ = $\nvtt{Object}{}$. We consider the more specific first and continue with step 3.
+We substitute $\nvtt{Y}{}$ for $\fa{6}$, because our constraint set has changed now again we start again from step 1. This time no rule of step 1 to 4 applies and we can jump right to step 5.
+Here we find the constraint $\fa{1}$ < $\fa{5}$, we can substitute $\fa{1}$ for $\fa{5}$ and adding the constraint that they both need to be equal.
+No further rule applies and we can go to step 6. Before we start with step 6 we need to transform back the type variables from parameterless classes to normal type variables (for example: $\nvtt{X}{} \to \text{X}$). Here we first divide the constraint set into sub- and equal-constraints resulting in the following:
+
+\begin{align*}
+    \text{C}_= &= \{ \fa{0} = \nvtt{Pair}{\fa{1}, \ \text{Y}}, \ \fa{6} = \text{Y}, \ \fa{5} = \fa{1}, \ \fa{4} = \text{Y}, \ \fa{3} = \text{X}, \ \fa{2} = \text{Y} \}\\
+    \text{C}_< &= \{ \fa{1} < \nvtt{Object}{} \}
+\end{align*}
+
+For the sub-constraint we introduce a new type variable \inl{Z} with its upper bound determined by type sub-constraint.
+We substitute every right hand side of equal-constraints until there are no more occurrences of type variables.
+
+The type signature for \inl{newfst} is $[\fa{1}] \to \fa{0}$, if we substitute now we get the type signature $[\text{Z}] \to \nvtt{Pair}{\text{Z}, \ \text{Y}}$.
+The last thing to do is to add the upper bounds to all new generic types and we have the full type signature:
+
+\begin{align*}
+    \text{<} \text{Z} \vartriangleleft \nvtt{Object}{}\text{>}[\text{Z}] \to \nvtt{Pair}{\text{Z}, \ \text{Y}}
 \end{align*}
