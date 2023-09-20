@@ -26,7 +26,11 @@ There is not really a nice way in python to do such a thing. The most simple way
 There are two kind of rule. Some that take one and some that take two constraints as pre-condition. This forces two for-loops to go over every possible combination. Deciding which rule to apply is done by pattern matching against sub- or equal-constraints and on the types of the constraint elements. Because some patterns are ambiguous it is important to take the order into account.
 
 \subsubsection{ExpandLB}
-The implementation of expandLB differs from the idea the original paper imposes. Having constraints such that (a < $\nvt{C}{T}$) and (a <* b) so it is possible that ($\nvt{C}{T}$ < b) is implied is not possible. because the dual rules of DOES IT?
+A pair of constraints ($\nvtt{N}{T} < \fa{}$, $\fa{} < \nvtt{M}{U}$) can only be solved if $\nvtt{N}{T}$ is a subtype of $\nvtt{M}{U}$. Hence this subtyping constraint is added to the constraint set. After applying the rule of figure .. exhaustively to the constraint set the constraint set is either in solved form or no solution exists.
+Every possible $\nvtt{N}{V}$ between $\nvtt{N}{T}$ and $\nvtt{M}{U}$
+\\
+\\
+Having constraints such that (a < $\nvt{C}{T}$) and (a <* b) so it is possible that ($\nvt{C}{T}$ < b) is implied is not possible. because the dual rules of DOES IT?
 
 \subsection{Example}
 
@@ -41,8 +45,6 @@ Consider the following Featherweight Generic Java program without any type annot
             return new Pair(newfst, this.snd);
         }
     }
-
-    new Object()
 \end{minted}
 
 This example only contains one class definition, thus \inl{FJType} and \inl{Unify} run exactly once. Still, \inl{Unify} may return more than one solution.
@@ -98,7 +100,7 @@ Now we have all constraints and method types that we need and can start to solve
 
 \subsubsection{Unify}
 The first thing that \inl{Unify} does is to resolve the or-constraints. Here we have only one possibility in the or-constraint, thus we can just add all constraints together.
-Before we go on we need to transform all type variables to parameterless classes (for example: $\text{X} \to \nvtt{X}{}$).
+Before we go on we need to transform all type variables to parameterless classes ($\text{X} \to \nvtt{X}{}$).
 Then we continue with step 1. The only rule that applies to anything is \inl{adapt}.
 
 \begin{align*}
@@ -122,12 +124,12 @@ These substitutions change our constraint set and we start again from step 1 wit
 
 \begin{align*}
     \text{C} = \{& \nvtt{Y}{} < \fa{6}, \ \fa{1} < \fa{5}, \ \fa{6} < \nvtt{Object}{}, \ \fa{1} < \nvtt{Object}{}, \\
-    &\nvtt{X}{} < \nvtt{Object}{}, \ \fa{4} = \nvtt{Y}{}, \ \nvtt{Y}{} < \nvtt{Object}{} \ \fa{0} = \nvtt{Pair}{\fa{5}, \ \fa{6}}, \\
-    &\fa{3} = \nvtt{X}{}, \fa{2} = \nvtt{Y}{}, \ \fa{5} < \nvtt{Object}{} \\
+    &\nvtt{X}{} < \nvtt{Object}{}, \ \fa{4} = \nvtt{Y}{}, \ \nvtt{Y}{} < \nvtt{Object}{}, \\
+    &\fa{0} = \nvtt{Pair}{\fa{5}, \ \fa{6}}, \ \fa{3} = \nvtt{X}{}, \fa{2} = \nvtt{Y}{}, \ \fa{5} < \nvtt{Object}{} \\
     &\}
 \end{align*}
 
-With adapt and reduce we can kick out both, $\nvtt{X}{}$ < $\nvtt{Object}{}$ and $\nvtt{Y}{}$ < \nvtt{Object}{}. Then we continue with step 2.
+With adapt and reduce we can drop both, $\nvtt{X}{}$ < $\nvtt{Object}{}$ and $\nvtt{Y}{}$ < \nvtt{Object}{}. Then we continue with step 2.
 Once again we find a constraint that has a type variable as upper bound, this time $\nvtt{Y}{}$ < $\fa{6}$ the corresponding upper bound is $\fa{6}$ < $\nvtt{Object}{}$.
 Resolving this with \inl{expandLB} gives us again two constraint sets, one with $\fa{6}$ = $\nvtt{Y}{}$ and one with $\fa{6}$ = $\nvtt{Object}{}$. We consider the more specific first and continue with step 3.
 We substitute $\nvtt{Y}{}$ for $\fa{6}$, this changes our constraint set and we start again from step 1. This time no rule of step 1 to 4 applies and we can jump right to step 5.
@@ -148,3 +150,34 @@ The last thing to do is to add the upper bounds to all new generic types and we 
 \begin{align*}
     \text{<} \text{Z} \vartriangleleft \nvtt{Object}{}\text{>}[\text{Z}] \to \nvtt{Pair}{\text{Z}, \ \text{Y}}
 \end{align*}
+
+Let us consider a more advanced example:
+
+\begin{minted}[escapeinside=||]{java}
+    class Int<> extends Object<> {
+        id(x) {
+            return x;
+        }
+    }
+
+    class SomeMethods<> extends Object<> {
+        idd(x) {
+            return x.id(x);
+        }
+    }
+
+    class Pair<X extends Int<>, Y extends Int<>> extends SomeMethods<> {
+        X fst;
+        Y snd;
+
+        setfst(newfst) {
+            return new Pair(newfst, this.snd);
+        }
+
+        setboth(newfst, newsnd) {
+            return new Pair(this.setfst(newfst).fst, this.idd(newsnd.id(newsnd)));
+        }
+    }
+\end{minted}
+
+Here we have more than just one class
