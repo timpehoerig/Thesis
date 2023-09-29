@@ -2,9 +2,9 @@
 Consider the following definition of the function \inl{increment} which takes an argument \inl{n},
 increments it by one and returns the result.
 \begin{minted}[escapeinside=||]{java}
-    increment(n) {
-      return n + 1;
-    }
+  |\black{increment}|(n) {
+    |\pink{return}| n + 1;
+  }
 \end{minted}
 Calling this function with an \inl{Integer}, for example 1, returns 2.
 However, calling it with a \inl{String} results in a type error, because addition between a \inl{String}
@@ -14,8 +14,8 @@ With type systems it is possible to detect such errors at compile time and thus 
 In order to detect such errors at compile time additional information is given to the function declaration.
 Consider the previous example but now with type annotations.
 \begin{minted}[escapeinside=||]{java}
-  Integer increment(Integer n) {
-    return n + 1;
+  |\green{Integer} \black{increment}|(|\green{Integer}| n) {
+    |\pink{return}| n + 1;
   }
 \end{minted}
 Writing the type \inl{Integer} in front of the function name indicates the function's return type.
@@ -26,7 +26,7 @@ Now the type system knows of which type the argument must be and thus calling \i
 In order to correctly typecheck a whole program, everything that has a type needs an explicit type annotated,
 even if the type annotation seems to be redundant. For example an instantiation of a variable.
 An other down sight might be, that programmers do not always annotate the most general type. Consider the function \inl{plus} (\inl{+}) without any type annotations this function works for all types that support the addition operator like \inl{Int}, \inl{Double} or \inl{Float}.
-Annotation this \inl{plus} function with one of those types would mean its not possible to call it with another one.\\
+Annotation this \inl{plus} function with one of those types would mean it is not possible to call it with another one.\\
 So having the advantages of a type system without being forced to write the additional information yourself would be optimal. Type inference does just this.
 However type inference has its boundaries. Inferring every type without any information is often not just hard but impossible. Different languages have different restrictions to make global type inference possible.
 
@@ -41,16 +41,19 @@ As Java itself is not a functional programming languages it is easy to see that 
 A typical Featherweight Java program may look like this:
 
 \begin{minted}[escapeinside=||]{java}
-  class Pair extends Object{
-    Object fst;
-    Object snd;
+  |\pink{class} \green{Pair} \pink{extends} \green{Object}|{
+    |\green{Object} fst|;
+    |\green{Object} snd|;
 
-    Pair setfst(Object newfst) {
-      return new Pair(newfst, this.snd);
+    |\green{Pair} \black{setfst}|(|\green{Object}| newfst) {
+      |\pink{return new} \green{Pair}|(|newfst, this.snd|);
     }
   }
 
-  (new Pair(new Pair(new Object(), new Object()), new Object()).fst).fst
+  (|\pink{new} \green{Pair}|(
+    |\pink{new} \green{Pair}|(|\pink{new} \green{Object}|(), |\pink{new} \green{Object}|()),
+    |\pink{new} \green{Object}|()
+  ).|fst|).|fst|
 \end{minted}
 
 A Featherweight Java program always consists of two parts. First, one ore more class definitions and second, an expression to be evaluated.
@@ -60,28 +63,32 @@ In the example above the most inner expression that has a fixed type is the obje
 Then the field \inl{fst} is accessed. Because the field \inl{fst} of class \inl{Pair} is annotated with \inl{Object} the resulting type is \inl{Object} even if the expression itself is \inl{new Pair(new Object(), new Object())}.
 Now trying to access the field \inl{fst} the second time would be possible because the expression it is called on is an object creation of \inl{Pair} but because its type is \inl{Object} this leads to a compile time error.
 
-Instead of giving fields a concrete type like \inl{Object}, giving them a type variable solves this problem.
+Instead of giving fields a concrete type like \inl{Object}, giving them a type parameter solves this problem.
 Extending Featherweight Java with Generics leads to Featherweight Generic Java.
-Type variables are just like normal variables but they range over types. In Featherweight Generic Java every type variables is given an upper bound.
-In the following example the type variables \inl{X} and \inl{Y} are introduced both with the upper bound \inl{Object}.
-That means both type variables can range over any types that are a subtype of \inl{Object}.
+Type parameters are just like normal parameters but they range over types. In Featherweight Generic Java every type parameter is given an upper bound.
+In the following example the type parameters \inl{X} and \inl{Y} are introduced both with the upper bound \inl{Object}.
+That means both type parameters can range over any types that are a subtype of \inl{Object}.
 
-Type variables can also be used in method declarations to set relations between different arguments and or the return type.
-When a class is instantiated the type variables are also instantiated with a concrete type.
+Type parameters can also be used in method declarations to set relations between different arguments and or the return type.
+When a class is instantiated the type parameters are also instantiated with a concrete type.
 
 Rewriting the example above results in:
 
 \begin{minted}[escapeinside=||]{java}
-  class Pair<X extends Object<>, Y extends Object<>> extends Object<>{
-    X fst;
-    Y snd;
+  |\pink{class} \green{Pair}|<|\green{X} \pink{extends} \green{Object}|<>,
+             |\green{Y} \pink{extends} \green{Object}|<>> |\pink{extends} \green{Object}|<>{
+    |\green{X} fst|;
+    |\green{Y} snd|;
 
-    <Z extends Object<>> Pair<Z, Y> setfst(Z newfst) {
-      return new Pair(newfst, this.snd);
+    <|\green{Z} \pink{extends} \green{Object}|<>> |\green{Pair}|<|\green{Z}|, |\green{Y}|> |setfst|(|\green{Z} newfst|) {
+      |\pink{return new} \green{Pair}|(newfst, |this.snd|);
     }
   }
 
-  (new Pair<Pair<Object<>, Object<>>, Object<>>(new Pair<Object<>, Object<>>(new Object<>(), new Object<>()), new Object<>()).fst).fst
+  (|\pink{new} \green{Pair}|<|\green{Pair}|<|\green{Object}|<>, |\green{Object}|<>>, |\green{Object}|<>>(
+    |\pink{new} \green{Pair}|<|\green{Object}|<>, |\green{Object}|<>>(|\pink{new} \green{Object}|<>(), |\pink{new} \green{Object}|<>()),
+    |\pink{new} \green{Object}|<>()
+  ).|fst|).|fst|
 \end{minted}
 
 Now trying to access the field \inl{fst} results in the same expression but with type \inl{Pair<Object<>, Object<>>} that is why the second field lookup is successful.
@@ -90,19 +97,23 @@ Generics are very powerful and nice to have but at the same time make type annot
 Adding type inference to Featherweight Generic Java would make it possible to rewrite the example above as follows:
 
 \begin{minted}[escapeinside=||]{java}
-  class Pair<X extends Object<>, Y extends Object<>> extends Object<> {
-    X fst;
-    Y snd;
+  |\pink{class} \green{Pair}|<|\green{X} \pink{extends} \green{Object}|<>,
+             |\green{Y} \pink{extends} \green{Object}|<>> |\pink{extends} \green{Object}|<>{
+    |\green{X} fst|;
+    |\green{Y} snd|;
 
-    setfst(newfst) {
-      return new Pair(newfst, this.snd);
+    |setfst|(newfst) {
+      |\pink{return new} \green{Pair}|(newfst, |this.snd|);
     }
 
-    (new Pair(new Pair(new Object(), new Object()), new Object()).fst).fst
+    (|\pink{new} \green{Pair}|(
+      |\pink{new} \green{Pair}|(|\pink{new} \green{Object}|(), |\pink{new} \green{Object}|()),
+      |\pink{new} \green{Object}|()
+    ).|fst|).|fst|
   }
 \end{minted}
 
 Here almost every type annotation is dropped except for class headers and field types.
 \\
 \\
-The following sections first describe Featherweight Generic Java and Global Type Inference formal as it is describe in the Paper [...] (and [...]) except for a few changes and then shows how the Global Type Inference Algorithm is implemented.
+The following sections first describe Featherweight Generic Java and Global Type Inference formal as it is describe in the paper "Global Type Inference for Featherweight Generic Java"\cite{FGJ} by Stadelmeier et al. except for a few changes and then shows how the Global Type Inference Algorithm is implemented.

@@ -1,4 +1,4 @@
-In the following sections all auxiliary functions that are used in the typeinference algorithm are specified.
+In the following sections all auxiliary functions that are used in the type inference algorithm are specified.
 
 \subsection{Substitution}
 
@@ -12,13 +12,13 @@ In the following sections all auxiliary functions that are used in the typeinfer
 3&: \tsxsns{T}{X}{N}
 \end{align*}
 
-The first rule (1) shows the standart substitution rule. In a non variable type N every variable type X is replaced by the given type T.
+The first rule (1) shows the standard substitution rule. In a non variable type N every type parameter X is replaced by the given type T.
 \\
-The second rule (2) is short for \inl{[T_1/X_1, ... , T_n/X_n]N}.
+The second rule (2) is short for $[\text{T}_1/\text{X}_1, \ ... \ , \ \text{T}_n/\text{X}_n]\text{N}$.
 \\
-The third rule (3) is short for \inl{[T_1/X_1, ... , T_n/X_n]N_1, ... , [T_1/X_1, ... , T_n/X_n]N_n}.
+The third rule (3) is short for $[\text{T}_1/\text{X}_1, \ ... \ , \ \text{T}_n/\text{X}_n]\text{N}_1, \ ... \ , \ [\text{T}_1/\text{X}_1, \ ... \ , \ \text{T}_n/\text{X}_n]\text{N}_n$.
 \\
-These rules are implemented in different functions using pattern matching on the different type types.
+These rules are implemented in different functions using pattern matching on the different types in \inl{N}.
 
 \subsection{Substitution on constraints}
 
@@ -43,42 +43,50 @@ Substitution is also possible on constraint sets. Type variables can be replaced
 3&: \ \Delta \vdash \text{X} <: \Delta(\text{X})
 \\
 \\
-4&: \ \frac{
-    \begin{matrix}
-        \classheader \ \{...\} \\
-        \Delta \vdash \ot{T} ok \quad \Delta \vdash \ot{T} <: \tsxsns{T}{X}{N}
-    \end{matrix}}
-    {\Delta C<\ot{T}> \ ok}
+4&: \ \frac{\classheader \ \{...\}}{\Delta \vdash \nvt{C}{T} <: \tsxsn{T}{X}{N}}
     \end{align*}
     \caption{Subtyping}
     \label{subtyping}
 \end{figure}
 
-By definition a type is always a subtype of itself. Subtyping is also transitive and the environment delta $\Delta$ maps every type variable to its upper bound.
+Figure \ref{subtyping} shows the subtyping rules. By definition a type is always a subtype of itself. Subtyping is also transitive and the environment delta $\Delta$ maps every type parameter to its upper bound thus a type parameter is always a subtype of its upper bound.
+A class is always a subclass of its superclass. However a generic class is only a subtype of its superclass where all type parameters that occur in the class are replaced in the superclass by the concrete types giving to the instantiation of the class.
 
 \subsection{Field Lookup}
 
 \begin{align*}
-    \text{fields}(\text{Object}) = \{\}\\
+    &\text{fields}(\text{Object}) = \{\}\\
     \\
-    \frac{\class{S}{f} \quad \text{fields}(\tsxsn{T}{X}{N}) = \ot{U} \ \ot{g} }{\text{fields}(\nvt{C}{T}) = \ot{U} \ \ot{g}, \ \tsxsns{T}{X}{S} \ \ot{f}}\\
+    &\frac{\class{S}{f} \quad \text{fields}(\tsxsn{T}{X}{N}) = \ot{U} \ \ot{g} }{\text{fields}(\nvt{C}{T}) = \ot{U} \ \ot{g}, \ \tsxsns{T}{X}{S} \ \ot{f}}\\
 \end{align*}
 
-A field lookup on a class \inl{C} returns every field of \inl{C} with its type and also every field with its type for all superclasses of \inl{C}. \inl{Object} itself has no fields thus \inl{fields(Object)} returns the empty dictionary.
-The type variables need a special treatment here. The field types of a class \inl{C} may include type variables, these must be substituted with the types the class is instantiated with. This also needs to be done for the superclass of \inl{C}.
+A field lookup on a class \inl{C} returns every field of \inl{C} with its type including all fields of all superclasses of \inl{C} with their fields. \inl{Object} itself has no fields thus \inl{fields(Object)} returns the empty dictionary.
+The type parameters need a special treatment here. The field types of a class \inl{C} may include type parameters, these must be substituted with the types the class is instantiated with. This also needs to be done for the superclass of \inl{C} before the recursive call of \inl{fields}.
 
 \subsection{Method Type Lookup}
 
-In Featherweight Generic Java methods of superclasses are inherited. Hence method type lookups on classes with or without the method defined can be possible. If the method is defined in the class, the method type signature can be read of the method type environment. Once again generic type variables may occur in that type signature and must be substituted.
-If the method is not defined in the class \inl{C}, then \inl{mtype} is called on the superclass of \inl{C} where generic type variables are substituted by the types the class \inl{C} is instantiated with.
+\begin{align*}
+    \frac{
+        \begin{matrix}
+            \class{X}{N} \quad \text{m} \in \ot{M} \\
+            \yp \oto{\text{U}} \in \sprod{.7} (\cm)
+        \end{matrix}
+    }{\mtypeC{\nvtt{C}{T}} = \tsxsn{T}{X}{} \yp \oto{\text{U}}}
+    \\
+    \\
+    \frac{\class{X}{N} \quad \text{m} \notin \ot{M}}{\mtypeC{\tsxsn{T}{X}{N}}}
+\end{align*}
+
+In Featherweight Generic Java methods of superclasses are inherited. Hence method type lookups on classes with or without the method defined can be possible. If the method is defined in the class, the method type signature can be read of the method type environment. Once again generic type parameters may occur in that type signature and must be substituted.
+If the method is not defined in the class \inl{C}, then \inl{mtype} is called on the superclass of \inl{C} where the generic type parameters are substituted by the types the class \inl{C} is instantiated with.
 
 \subsection{Generic Supertype}
 
 \begin{align*}
-    \text{genericSupertype} (\text(C), \ot{T}, \text{C} ) = \ot{T}\\
+    &\text{genericSupertype} (\text{C}, \ot{T}, \text{C} ) = \ot{T}\\
     \\
-    \frac{ \text{class} \ \text{C} \yp \vartriangleleft \nvt{C'}{M} \ \{ ... \} }{ \text{genericSupertype} ( \text{C}, \ot{T}, \text{D} ) = \text{genericSupertype} ( \text{C'}, \tsxsns{T}{Y}{M}, \text{D} ) }\\
+    &\frac{ \text{class} \ \text{C} \yp \vartriangleleft \nvt{C'}{M} \ \{ ... \} }{ \text{genericSupertype} ( \text{C}, \ot{T}, \text{D} ) = \text{genericSupertype} ( \text{C'}, \tsxsns{T}{Y}{M}, \text{D} ) }\\
 \end{align*}
 
 GenericSupertype takes two subtype related classes C and D and a list of types $\ot{T}$ as arguments. If the two classes are the same, then the list of types $\ot{T}$ is returned. Otherwise the function is recursively called with the superclass C' of C.
-However, the superclass C' may have different generic type variables than C. That is why $\ot{T}$ is replaced by $\ot{M}$ where $\ot{M}$ are the generic type variables of C', but the generic type variables $\ot{Y}$ may occur in $\ot{M}$, thus $\ot{T}$ is substituted for $\ot{Y}$ in $\ot{M}$.
+However, the superclass C' may have different generic type parameters than C. That is why $\ot{T}$ is replaced by $\ot{M}$ where $\ot{M}$ are the generic type parameters of C', but the generic type parameters $\ot{Y}$ may occur in $\ot{M}$, thus $\ot{T}$ is substituted for $\ot{Y}$ in $\ot{M}$.

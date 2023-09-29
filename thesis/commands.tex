@@ -12,12 +12,19 @@
 \newcommand{\tsxsnsd}[5]{\text{[}\ot{#1}/\ot{#2}\text{]}\text{[}\ot{#3}/\ot{#4}\text{]}\ot{#5}}
 \newcommand{\cm}{\text{C} \xn \text{.m}}
 \newcommand{\oto}[1]{\overline{#1} \to #1}
-\newcommand{\mtype}{\text{mtype} ( \text{m}, \ \text{N}, \ \prod )}
+\newcommand{\sprod}[1]{\raisebox{.5ex}{\scalebox{#1}{$\prod$}}}
+\newcommand{\mtype}{\text{mtype} ( \text{m}, \ \text{N}, \ \sprod{0.7} )}
+\newcommand{\mtypeC}[1]{\text{mtype} ( \text{m}, \ #1, \ \sprod{0.7} )}
 \newcommand{\fresh}[1]{#1 \ \text{fresh}}
-\newcommand{\texpr}[1]{\text{TYPEExpr}((\prod; \overline{\eta}), #1)}
+\newcommand{\texpr}[1]{\text{TYPEExpr}((\sprod{0.7}; \overline{\eta}), #1)}
 \newcommand{\nvt}[2]{\text{#1<}\ot{#2}\text{>}}
 \newcommand{\class}[2]{\classheader \ \{ \ \ot{#1} \ \ot{#2} ; \ [\text{K}] \ \ot{M} \ \} }
 \newcommand{\cand}{\text{C} \cup}
 \newcommand{\cxnm}[4]{\text{#1} \text{<} \text{#2} \vartriangleleft \text{#3} \text{>}. \text{#4}}
 \newcommand{\nvtt}[2]{\text{#1} \text{<} #2 \text{>}}
 \newcommand{\fa}[1]{\text{a}_{#1}}
+\newcommand{\xa}[2]{\text{#1}_{#2}}
+\newcommand{\pink}[1]{\textcolor{purple}{#1}}
+\newcommand{\blue}[1]{\textcolor{blue}{#1}}
+\newcommand{\green}[1]{\textcolor{teal}{#1}}
+\newcommand{\black}[1]{\textcolor{black}{#1}}

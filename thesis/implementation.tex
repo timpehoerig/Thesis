@@ -1,49 +1,102 @@
+This Global Type Inference algorithm is implemented in Python (3.10).
+
 Python is not a functional language, hence data structures like lists, dictionaries and sets are mutable. That imposes a problem because mutable data structures are not hashable but entries of sets must be. Having a set of sets is not possible.
 In order to solve this problem all sets, lists and dictionaries are made immutable by using frozenlists, frozensets and frozendictionaries. As frozensets come with the default library they can be used easily. In order to have frozenlists and frozendicts the python libraries \inl{FrozenList} and \inl{frozendict} are used.\\
 One important environment that is passed to almost every functions but never mentioned in the abstract definitions is the \inl{Class Table}. The Class Table or short CT is a mapping from class names to their class definitions. This environment is filled at the parsing step and never changed afterwards. This environment makes it easy to have full access to any class at any time only by having their name.\\
 
+\subsection{TypeInference}
 
+The function \inl{TypeInference} connects constraint generation with constraint solving. The implementation of it differs from the idea describe in the paper.
+Classes are processed one after another, thus every class has access to the method types inferred for all methods that are defined in earlier classes.
+First, \inl{Type} is called. The current class and the method type environment containing all the method type assumptions of earlier classes are given as arguments. It returns a method type assumption for every
+method defined in the current class together with a constraint set.
+
+Then \inl{Unify} with that constraint set is called. \inl{Unify} needs a mapping from every type parameter that occurs in the constraint set to its upper bound (which is a non type variable).
+Type parameters that may occur are the field types of the current class and type parameter in method types from methods defined in earlier classes that are overridden in the current class definition.
+The upper bounds of the field types can be directly read of the class definition. The upper bounds of the type variables occurring in method types can be read of the method type assumption that is returned from the call to \inl{Type}.
+Both together are passed to \inl{Unify}.
+
+\inl{Unify} returns a generator that yields every possible solution, one at a time. The following steps are done for every possible solution by simply looping over them.
+
+A solution consists of two parts. First, a mapping from every type variable occurring in the constraints to a type parameter or a non variable type. Second, a mapping from every new type parameter introduced by \inl{Unify} to its upper bound.
+For every method type assumption created by \inl{Type} all type variables are replaced by the type they are mapped to and
+a generic type annotation is added. This generic type annotation maps every type parameter that occurs in the method type assumption to its upper bound.
+Finding all type parameters that do occur is done by the function \inl{getTypeSigOf} which traverses every type of the method type assumption recursively and keeps a list of all type variables that occur.
+
+At this point additional checks can be added, for example type checking the program. If one of those checks fails the algorithm would skip to the next possible solution.
+
+Then \inl{TypeInference} is recursively called with the new method type assumptions and the next class.
+
+The next class is found by giving \inl{TypeInference} a new argument \inl{index} that points to the class that is currently checked and incremented by one before passing it to the recursive call.
+If the index is bigger than the amount of classes the program has, the algorithm finishes and a solution is found.
+However this solution may not be a correct one. This can happen for example when overriding a method. In order to obtain a correct global solution
+the program must be type checked. This is not done in this implementation.
+
+If overall no solution is found the exception \inl{NoSolutionFound} is raised.
 
 \subsection{FJType}
 The implementation of the constraint generation is straight forward. Because every functions is described in pseudo code most of the functions can easily be translated into python code. \\
-Creating fresh type variables is simply done by instantiating a generator at the beginning that generates type variables of the form \inl{x_0, x_1, ...} where \inl{x} is a string given as argument to the generator instantiation. \\
+Creating fresh type variables is simply done by instantiating a generator at the beginning that generates type variables of the form $x_0$, $x_1$, ... where \inl{x} is a string given as argument to the generator instantiation. \\
 
 \subsection{FJUnify}
 
-\subsubsection{Resolving or-constraints}
-Converting a constraint set \inl{C} which contains simple-constraint as well as or-constraints equals a Cartesian product with n sets, where n is the number of or-constraints in \inl{C}.
-But first the constraint set \inl{C} is divided in two parts. One that contains all simple-constraints and one that contains all or-constraints.
-Then the Cartesian product of all or-constraint is calculated. To each result all simple constraints are added. This is exponential in the number of or-constraint sets, thus this is implemented as a generator that yields one solution after another.
+Unify may produce more than one solution for a class. One of these solutions is assumed and the next class is processed. If a solution does not fit to the overall solution the next one is assumed.
+If all solutions of a class fail, the algorithm backtracks to the class processed before and assumes the next solution of that class. This is depth first search. Thus it is more efficient if not all solutions of \inl{FJUnify} are calculated at once, but just when they are needed.
+To do this the whole function \inl{FJUnify} is implemented as a generator, yielding one solution after another.
 
-\subsubsection{Treating type variables as parameterless classes}
-All rules of step 1 and following, would also apply for generic type variables. So every rule also must be defined for them, not just tripling the code but also imposing some nasty edge cases. In order to solve this generic type variables are treated as parameterless classes with their upper bounds being now their superclasses. One important thing here is, that those new classes are not added to the Class Table, instead they are stored in an extra environment. When looking up classes in the Class Table an extra check must be done if the class is in it, if not the superclass can be read out of the new environment.
-The transformation from  generic type variables to parameterless classes and backwards is done in two extra functions that take and return a constraint set.
+\subsubsection{Resolving or-constraints}
+Converting a constraint set \inl{C} which contains simple-constraints as well as or-constraints equals a Cartesian product with n sets, where n is the number of or-constraints in \inl{C}.
+First the constraint set \inl{C} is divided in two parts. One that contains all simple-constraints and one that contains all or-constraints.
+Then the Cartesian product of all or-constraint is calculated. To each result all simple constraints are added. This is exponential in the number of or-constraint sets, thus this is implemented as a generator (\inl{gen_C_prime}) that yields one solution after another.
+\inl{gen_C_prime} has an optional argument to give or-constraints an ordering. If such an ordering is provided the constraints inside the or-constraints are considered in that ordering.
+
+\subsubsection{Treating type parameters as parameterless classes}
+All rules of step 1 and following, would also apply for generic type parameters. So every rule also must be defined for them and every possible combinations. In order to avoid this, generic type parameters are treated as parameterless classes with their upper bounds being now their superclasses. One important thing here is, that those new classes are not added to the Class Table, instead they are stored in an extra environment. When looking up classes in the Class Table an extra check must be done if the class is in it, if not the superclass can be read out of the new environment.
+The transformation from  generic type parameters to parameterless classes and backwards is done in two extra functions that take and return a constraint set.
+These functions first apply the transformations to both side of each constraint. In case of a non type variable, the transformations are applied recursively.
 
 \subsubsection{Exhaustively applying rules}
-There is not really a nice way in python to do such a thing. The most simple way to do so is to have a while-loop on a condition variable \inl{changed} that is True at the beginning but changes to False as soon as the while-loop is entered. Then, if one rule applies and changes something this condition variable is set to True. That alone may not seem too bad but the combination of two nested for-loops to go over every possible combination of constraints, while changing the constraint set the loop is going through results in some nasty code that is not the most efficient.
+There is not really a nice way in python to do such a thing. The most simple way to do so is to have a while-loop on a condition variable \inl{changed} that is True at the beginning but changes to False as soon as the while-loop is entered. Then, if one rule applies and changes something this condition variable is set to True.
+Some rules exists that work on two constraint, thus every possible combination of constraints must be tried. This is done by two nested for-loops.
+Applying a rule changes the constraint set, that imposes a problem. Changing a set while iterating over it is not possible. Thus the set is copied at the beginning, as soon as one rule applies, a constraint may be removed of the constraint set. However, that does not effect the copy, resulting in another problem: Constraints that were removed are not allowed to be used again.
+A simple but not efficient way to solve this is to restart the for-loop every time a rule applies.
 
-\subsubsection{Rules in step 1}
-There are two kind of rule. Some that take one and some that take two constraints as pre-condition. This forces two for-loops to go over every possible combination. Deciding which rule to apply is done by pattern matching against sub- or equal-constraints and on the types of the constraint elements. Because some patterns are ambiguous it is important to take the order into account.
+\subsubsection{Rules in Figure \ref{resolve_rules}}
+Rules have different many constraint as pre-condition, for rules that have more than one pre-condition every possible combination of constraints must be considered. Rules that take arbitrary many sub-constraints on type variables can be implemented very easily by taking just one (in case of the rule equals) or none (in case of adopt) sub-constraint on type variables.
+Then the two type variables that do occur in the constraints (either in the one subtype constraint on type variables or in the two other constraints needed for adopt) are checked if they are in any case subtype related.
+This leads to a maximum of two pre-condition, thus two nested for-loops over the constraint set are needed.
+Deciding which rule to apply is done by pattern matching against sub- or equal-constraints and on the types occurring in them.
+The rules \inl{match} and \inl{adapt} need a check if two types are subtype related, this is done with the function \inl{genericSupertype}.
+
+The rule \inl{adopt} imposes a problem. If the upper bound of \inl{b} is not \inl{Object} but the upper bound of \inl{a} is, then the constraint (\inl{b} < \inl{Object}) is added. However this constraint together with the original subtype constraint on \inl{b} can be resolved with \inl{match} and \inl{reduce} resulting in a constraint set equivalent to the constraint set at the beginning.
+This results in an endless loop where the constraint set always changes. Thus if the constraint that would be added by \inl{adopt} is a trivial constraint (something is a subtype of \inl{Object}) it is not added and thus not changing the constraint set.
 
 \subsubsection{ExpandLB}
-A pair of constraints ($\nvtt{N}{T} < \fa{}$, $\fa{} < \nvtt{M}{U}$) can only be solved if $\nvtt{N}{T}$ is a subtype of $\nvtt{M}{U}$. Hence this subtyping constraint is added to the constraint set. After applying the rule of figure .. exhaustively to the constraint set the constraint set is either in solved form or no solution exists.
-Every possible $\nvtt{N}{V}$ between $\nvtt{N}{T}$ and $\nvtt{M}{U}$
-\\
-\\
-Having constraints such that (a < $\nvt{C}{T}$) and (a <* b) so it is possible that ($\nvt{C}{T}$ < b) is implied is not possible. because the dual rules of DOES IT?
+A subtype constraint with a type variable as upper bound is not legal in Featherweight Generic Java. A type variable as upper bound indicates an unbounded type parameter which per definition is not possible.
+Thus an upper bound constraint for that type variable is needed. Such an upper bound constraint might already be in the constraint set. If not, a new subtype constraint for that type variable bounded by \inl{Object} is created and added to the constraint set.
+In the case that an upper bound constraint already existed it needs to be checked if the lower bound is a subtype of the upper bound. If not, this constraint set has no solution. This is done by replacing the upper and lower bound constraints by one subtype constraint of the lower and upper bound. Then the algorithm continues resolving, if this does not end in an unsolvable constraint the subtype constraint is fulfilled.
+Then an or-constraint that contains an equal constraint for the type variable and all possible types between the lower and upper bound (inclusively) is added to the constraint set. All possible candidates are observed by calling \inl{genericSupertype} on the lower and upper bound while maintaining a list of all intermediate steps.
+
+As constraint sets are described and implemented as sets, they do not impose any ordering. In general this is not a problem because the overall algorithm produces all possible solutions. However, in this implementation or-constraints generated by \inl{expandLB} have a hidden ordering such that the most specific constraint is taken first.
+This hidden ordering is passed to \inl{gen_C_prime} which flattens the or-constraints. If all possible solutions are considered this does not change anything.
+However, this may be important in the feature to find the most specific solution.
+
+When no such upper bound constraint with a type variable exists it still can be implied by some other constraints of the form ($a < \nvtt{C}{T}$) and ($a <^* b$). The type variable can be a subtype of \inl{C} or a supertype. If it is a supertype it is handled by creating an or-constraint as before, but if not, the case that \inl{b} can be a subtype of \inl{C} must also be considered. In order to handle this,
+the subtype constraint ($b < \nvtt{C}{T}$) is added as one option to the or-constraint. If such a subtype constraint is added to the or-constraint it is always added as first possible solution.
 
 \subsection{Example}
 
 Consider the following Featherweight Generic Java program without any type annotation for methods:
 
 \begin{minted}[escapeinside=||]{java}
-    class Pair<X extends Object<>, Y extends Object<>> extends Object<> {
-        X fst;
-        Y snd;
+    |\pink{class} \green{Pair}|<|\green{X} \pink{extends} \green{Object}|<>,
+               |\green{Y} \pink{extends} \green{Object}|<>> |\pink{extends} \green{Object}|<>{
+      |\green{X} fst|;
+      |\green{Y} snd|;
 
-        setfst(newfst) {
-            return new Pair(newfst, this.snd);
-        }
+      setfst(newfst) {
+        |\pink{return new} \green{Pair}|(|newfst|, |this.snd|);
+      }
     }
 \end{minted}
 
@@ -51,12 +104,14 @@ This example only contains one class definition, thus \inl{FJType} and \inl{Unif
 First, we look at \inl{FJType} and then at \inl{Unify}.
 \\
 \\
-In the following the fresh introduced type variables have the form $a_0$, $a_1$, ... the number respects the order in which they are introduced. In the following description the variables do not occur in the right order. This is because the algorithm is recursive and explaining the algorithm is easier
-if some information is given that in the algorithm itself would be known later. The name of the type variables does not matter and could also be different. This is simply done to showcase the order of which the type variables are introduced.
+In the following the fresh introduced type variables have the form $a_0$, $a_1$, ... the number respects the order in which they are generated. In the following description the variables do not occur in the right order. This is because the algorithm is recursive and explaining the algorithm is easier
+if some information is given that in the algorithm itself would be known later. The name of the type variables does not matter and could be different. This is simply done to showcase the order of which the type variables are generated.
+
+In the following multiple arguments to a function are represented in a list. Thus ($\oto{\text{a}}$) is equivalent to ($[\text{a}_1, \ \text{a}_2, \ ...] \to \text{a}_0$).
 
 \subsubsection{FJType}
-\inl{FJType} takes two arguments. First, the method type environment, because \inl{Pair} is the first class to be processed this environment is empty. Second, the class definition of \inl{Pair}.
-Now for every method defined in \inl{Pair} new type variables are introduced. Here the only method is \inl{setfst} which takes one argument, thus two variables are introduced, one for the return type and one for the argument type. This type annotation is added to the method type environment.
+The function \inl{FJType} takes two arguments. First, the method type environment, because \inl{Pair} is the first class to be processed this environment is empty. Second, the class definition of \inl{Pair}.
+Now for every method defined in \inl{Pair} new type variables are introduced. Here the only method is \inl{setfst} which takes one argument, thus two type variables are introduced, one for the return type and one for the argument type. This type annotation is added to the method type environment.
 Because there are no other definitions of the method \inl{setfst} in any superclasses of \inl{Pair} the only constraints for both variables are that they need to be subtypes of \inl{Object}. Thus the constraint set and the method type environment look like this:
 
 \begin{align*}
@@ -65,7 +120,7 @@ Because there are no other definitions of the method \inl{setfst} in any supercl
 \end{align*}
 
 Next for every method defined in \inl{Pair} the function \inl{TYPEMethod} with the new type environment is called.
-In this case only once for the method \inl{setfst}. \inl{TYPEMethod} creates the local variable type environment where \inl{this} has type \inl{Pair<X, Y>} (\inl{this} always refers to the class it is in which in this case is \inl{Pair}) and \inl{newfst} has type $a_1$.
+In this case only once for the method \inl{setfst}. \inl{TYPEMethod} creates the local variable type environment where \inl{this} has type \inl{Pair<X, Y>} (\inl{this} always refers to the class it is in, which in this case is \inl{Pair}) and \inl{newfst} has type $a_1$.
 
 Then the body of \inl{setfst} is processed. The body of a method always is one expression which here is an object creation of \inl{Pair}.
 First we get the types of the fields of \inl{Pair<X, Y>} while substituting \inl{X} and \inl{Y} by some fresh type variables $a_5$ and $a_6$. Both of them need to be subtypes of \inl{Object}. Here, because all fields are defined in the current class this result in the types $a_5$ and $a_6$. Now we process the arguments of \inl{new Pair(newfst, this.snd)}.
@@ -79,19 +134,19 @@ Now the constraint set looks like this:
 \begin{align*}
     \text{C} = \{& \text{a}_0 < \text{Object}, \ \text{a}_1 < \text{Object}, \\
     &\text{a}_1 < \text{a}_5, \ \text{a}_5 < \text{Object}, \ \text{a}_2 < \text{a}_6, \ \text{a}_6 < \text{Object}, \\
-    &(( \text{Pair<X, Y>} < \text{Pair<} \text{a}_3, \text{a}_4 \text{>}, \ \text{a}_2 = \text{a}_4, \ \text{a}_3 < \text{Object}, \ \text{a}_4 < \text{Object} ))\\
+    & \{ \{ \text{Pair<X, Y>} < \text{Pair<} \text{a}_3, \text{a}_4 \text{>}, \ \text{a}_2 = \text{a}_4, \ \text{a}_3 < \text{Object}, \ \text{a}_4 < \text{Object} \} \} \\
     &\}\\
 \end{align*}
 
 We know that \inl{setfst} returns a \inl{Pair}, we introduced the type variables $a_5$ and $a_6$ to represent the types of the parameters of the object creation, hence the return type of \inl{setfst} is \inl{Pair<}$a_5$, $a_6$\inl{>}.
 At the beginning we said the return type of \inl{newfst} is $a_0$ these two things lead to the last constraint \inl{Pair<}$a_5$, $a_6$\inl{>} < $a_0$.
-Now we have the full method type environment and the full constraint set:
+Resulting in the full method type environment and constraint set:
 
 \begin{align*}
     \lambda = \{& ( \cxnm{Pair}{X}{Object}{setfst} ): \ [\text{a}_1] \to \text{a}_0 \}\\
     \text{C} = \{& \text{a}_0 < \text{Object}, \ \text{a}_1 < \text{Object}, \\
     &\text{a}_1 < \text{a}_5, \ \text{a}_5 < \text{Object}, \ \text{a}_2 < \text{a}_6, \ \text{a}_6 < \text{Object}, \\
-    &(( \text{Pair<X, Y>} < \text{Pair<} \text{a}_3, \text{a}_4 \text{>}, \ \text{a}_2 = \text{a}_4, \ \text{a}_3 < \text{Object}, \ \text{a}_4 < \text{Object} )),\\
+    & \{ \{ \text{Pair<X, Y>} < \text{Pair<} \text{a}_3, \text{a}_4 \text{>}, \ \text{a}_2 = \text{a}_4, \ \text{a}_3 < \text{Object}, \ \text{a}_4 < \text{Object} \} \},\\
     &\text{Pair<}\text{a}_5, \text{a}_6\text{>} < \text{a}_0\\
     &\}\\
 \end{align*}
@@ -100,7 +155,7 @@ Now we have all constraints and method types that we need and can start to solve
 
 \subsubsection{Unify}
 The first thing that \inl{Unify} does is to resolve the or-constraints. Here we have only one possibility in the or-constraint, thus we can just add all constraints together.
-Before we go on we need to transform all type variables to parameterless classes ($\text{X} \to \nvtt{X}{}$).
+Before we go on we need to transform all type parameters to parameterless classes ($\text{X} \to \nvtt{X}{}$).
 Then we continue with step 1. The only rule that applies to anything is \inl{adapt}.
 
 \begin{align*}
@@ -113,13 +168,18 @@ Now we can resolve this further with \inl{reduce}:
     \frac{\cand \{ \nvtt{Pair}{\nvtt{X}{}, \nvtt{Y}{}} = \nvtt{Pair}{\fa{3}, \fa{4}} \} }{\cand \{ \nvtt{X}{} = \fa{3}, \ \nvtt{Y}{} = \fa{4} \} } \quad \text{reduce}
 \end{align*}
 
-Then with \inl{swap} the two resolved rules are swapped such that the type variables \inl{a} occur on the left hand side.
-No other rules apply and we continue with step 2.
+Then the two resolved rules are \inl{swap}ped such that the type variables \inl{a} occur on the left hand side.
 
-We find the constraint $\nvtt{Pair}{\fa{5}, \ \fa{6}} < \fa{0}$ which has a type variable as upper bound and thus requires us to resolve it with \inl{expandLB}. We search the upper bound constraint for $a_0$ which is $\fa{0} < \nvtt{Object}{}$.
+\begin{align*}
+    \frac{\cand \{ \nvtt{X}{} = \fa{3} \} }{\cand \{ \fa{3} = \nvtt{X}{} \} } \quad \text{and} \quad \frac{\cand \{ \nvtt{Y}{} = \fa{3} \} }{\cand \{ \fa{3} = \nvtt{Y}{} \} } \quad \text{swap}
+\end{align*}
+
+No other rules apply and we continue with step 2.\\
+
+We find the constraint ($\nvtt{Pair}{\fa{5}, \ \fa{6}} < \fa{0}$) which has a type variable as upper bound and thus requires us to resolve it with \inl{expandLB}. We search the upper bound constraint for $a_0$ which is ($\fa{0} < \nvtt{Object}{}$).
 Next we check if $\nvtt{Pair}{\fa{5}, \ \fa{6}}$ can be a subtype of \inl{Object} which is trivially satisfied (because everything is a subtype of \inl{Object}) and thus we know $a_0$ is either $\nvtt{Pair}{\fa{5}, \ \fa{6}}$ or \inl{Object}. We add those two constraints as an or-constraint
 to the constraint set, but now we have again or-constraints and thus have to flatten the constraint set once again. However, this time the or-constraint has two possible constraint sets resulting overall in two different simple constraint sets which we both have to consider one after the other.
-Here it is important to look at the constraint set that is more specific first. We continue with step 3 and the first simple-constraint set. We can substitute in three different cases: $\fa{2}$ = $\fa{4}$, $\fa{3}$ = $\nvtt{X}{}$ and $\fa{4}$ =  $\nvtt{Y}{}$.
+Here it is important to look at the constraint set that is more specific first. We continue with step 3 and the first simple-constraint set. We can substitute in three different cases: ($\fa{2}$ = $\fa{4}$), ($\fa{3}$ = $\nvtt{X}{}$) and ($\fa{4}$ = $\nvtt{Y}{}$).
 These substitutions change our constraint set and we start again from step 1 with the following constraint set:
 
 \begin{align*}
@@ -129,55 +189,73 @@ These substitutions change our constraint set and we start again from step 1 wit
     &\}
 \end{align*}
 
-With adapt and reduce we can drop both, $\nvtt{X}{}$ < $\nvtt{Object}{}$ and $\nvtt{Y}{}$ < \nvtt{Object}{}. Then we continue with step 2.
-Once again we find a constraint that has a type variable as upper bound, this time $\nvtt{Y}{}$ < $\fa{6}$ the corresponding upper bound is $\fa{6}$ < $\nvtt{Object}{}$.
-Resolving this with \inl{expandLB} gives us again two constraint sets, one with $\fa{6}$ = $\nvtt{Y}{}$ and one with $\fa{6}$ = $\nvtt{Object}{}$. We consider the more specific first and continue with step 3.
+With adapt and reduce we can drop both, ($\nvtt{X}{}$ < $\nvtt{Object}{}$) and ($\nvtt{Y}{}$ < \nvtt{Object}{}). Then we continue with step 2.
+Once again we find a constraint that has a type variable as upper bound, this time ($\nvtt{Y}{}$ < $\fa{6}$) the corresponding upper bound is ($\fa{6}$ < $\nvtt{Object}{}$).
+Resolving this with \inl{expandLB} gives us again two constraint sets, one with ($\fa{6}$ = $\nvtt{Y}{}$) and one with ($\fa{6}$ = $\nvtt{Object}{}$). We consider the more specific first and continue with step 3.
 We substitute $\nvtt{Y}{}$ for $\fa{6}$, this changes our constraint set and we start again from step 1. This time no rule of step 1 to 4 applies and we can jump right to step 5.
-Here we find the constraint $\fa{1}$ < $\fa{5}$, we can substitute $\fa{1}$ for $\fa{5}$ and add the constraint that they need to be equal.
-No further rule applies and we can go to step 6. Before we start with step 6 we need to transform the type variables from parameterless classes back to normal type variables (for example: $\nvtt{X}{} \to \text{X}$). Now we can start with step 6. We first divide the constraint set into sub- and equal-constraints resulting in the following:
+Here we find the constraint ($\fa{1}$ < $\fa{5}$), we can substitute $\fa{1}$ for $\fa{5}$ and add the constraint that they need to be equal.
+No further rule applies and we can go to step 6. Before we start with step 6 we need to transform the type parameters from parameterless classes back to normal type parameters ($\nvtt{X}{} \to \text{X}$). Now we can start with step 6. We first divide the constraint set into sub- and equal-constraints resulting in the following:
 
 \begin{align*}
     \text{C}_= &= \{ \fa{0} = \nvtt{Pair}{\fa{1}, \ \text{Y}}, \ \fa{6} = \text{Y}, \ \fa{5} = \fa{1}, \ \fa{4} = \text{Y}, \ \fa{3} = \text{X}, \ \fa{2} = \text{Y} \}\\
     \text{C}_< &= \{ \fa{1} < \nvtt{Object}{} \}
 \end{align*}
 
-For the sub-constraint we introduce a new type variable \inl{Z} with its upper bound determined by the sub-constraint.
+For the sub-constraint we introduce a new type parameters \inl{Z} with its upper bound determined by the sub-constraint.
 We substitute every right hand side of all equal-constraints until there are no more occurrences of type variables.
 
 The type signature for \inl{newfst} determined by \inl{FJType} was $[\fa{1}] \to \fa{0}$, if we substitute now we get the type signature $[\text{Z}] \to \nvtt{Pair}{\text{Z}, \ \text{Y}}$.
 The last thing to do is to add the upper bounds to all new generic types and we have the full type signature:
 
 \begin{align*}
-    \text{<} \text{Z} \vartriangleleft \nvtt{Object}{}\text{>}[\text{Z}] \to \nvtt{Pair}{\text{Z}, \ \text{Y}}
+    \text{<} \text{Z} \vartriangleleft \nvtt{Object}{}\text{>}[\text{Z}] \to \nvtt{Pair}{\text{Z}, \ \text{Y}}\\
 \end{align*}
 
-Let us consider a more advanced example:
+A more advanced example is shown in Figure \ref{example2}.
 
-\begin{minted}[escapeinside=||]{java}
-    class Int<> extends Object<> {
-        id(x) {
-            return x;
-        }
-    }
-
-    class SomeMethods<> extends Object<> {
-        idd(x) {
-            return x.id(x);
-        }
-    }
-
-    class Pair<X extends Int<>, Y extends Int<>> extends SomeMethods<> {
-        X fst;
-        Y snd;
-
-        setfst(newfst) {
-            return new Pair(newfst, this.snd);
+\begin{figure}[H]
+    \begin{minted}[escapeinside=||]{java}
+        |\pink{class} \green{Int}|<> |\pink{extends} \green{Object}|<> {
+          id(x) {
+            |\pink{return}| x;
+          }
         }
 
-        setboth(newfst, newsnd) {
-            return new Pair(this.setfst(newfst).fst, this.idd(newsnd.id(newsnd)));
+        |\pink{class} \green{SomeMethods}|<> |\pink{extends} \green{Object}|<> {
+          idd(x) {
+            |\pink{return}| x.|id|(x);
+          }
         }
-    }
-\end{minted}
 
-Here we have more than just one class
+        |\pink{class} \green{Pair}|<|\green{X} \pink{extends} \green{Object}|<>,
+                   |\green{Y} \pink{extends} \green{Object}|<>> |\pink{extends} \green{Object}|<>{
+          |\green{X} fst|;
+          |\green{Y} snd|;
+
+          setfst(newfst) {
+            |\pink{return new} \green{Pair}|(newfst, |this.snd|);
+          }
+
+          setboth(newfst, newsnd) {
+            |\pink{return new} \green{Pair}|(
+              |this|.|setfst|(newfst).|fst|,
+              (|\green{int}|<>)|this|.|idd|(newsnd.|id|(newsnd))
+            );
+          }
+        }
+    \end{minted}
+    \caption{Example 2}
+    \label{example2}
+\end{figure}
+
+We process one class after another, the first class does not bring any new features we have not seen in the first example. The inferred method type of \inl{id} is $<\xa{Z}{0} \vartriangleleft \nvtt{Object}{}>[\xa{Z}{0}] \to \xa{Z}{0}$.
+With this information the next class \inl{SomeMethods} is processed. While processing the body of \inl{idd} we encounter a method call of \inl{id} thus every method with that name in the method type environment is considered. The method type environment
+contains only one method signature. The one for \inl{id} of class \inl{Int} thus we know two things. First, \inl{x} has to be of type \inl{Int} because \inl{Int} is the only class that defines the method \inl{id}. Second, the type signature of \inl{id} states that the argument and the return type must be the same.
+That gives us all the information we need. \inl{x} must be a sub type of \inl{Int}, \inl{x.id(x)} has the same type as \inl{x}, thus the method type of \inl{idd} is $<\xa{Z}{1} \vartriangleleft \nvtt{Int}{}>[\xa{Z}{1}] \to \xa{Z}{1}$.
+Next we process the class \inl{Pair}. The first method \inl{setfst} is the same as in the previous example and thus has the same type, the only difference is, that the generic type parameters of \inl{Pair} are bound by \inl{Int} rather than \inl{Object}.
+This changes the upper bound in the method type. Hence the method type of \inl{setfst} is $<\xa{Z}{2} \vartriangleleft \nvtt{Int}{}>[\xa{Z}{2}] \to \nvtt{Pair}{\xa{Z}{2}, \ \text{Y}}$.
+The last method \inl{setboth} contains every possible expression there is: Variables, a field lookup, method calls, object creation and a cast.
+The overall return type is \inl{Pair}, the first argument of \inl{Pair} is a field lookup, thus its type depends on the object it is looked up on. This is a method call of \inl{setfst} for what we know the type already. Thus we know the argument to \inl{setfst} \inl{newfst} must be a subtype of \inl{Int}. The return type of \inl{setfst} is a \inl{Pair} where the first field has the same type as the argument \inl{newfst} and the second field has type \inl{Y}.
+Thus, a field lookup \inl{fst} on that \inl{Pair} has the same type as \inl{newfst}. Likewise the type of the second argument can be inferred. However, the most outer expression of the second field is a cast to \inl{int}, thus the type must be \inl{int}.
+The expression that is casted may introduce constraints that lead to conflicts, thus it is important to check it and not just stop at casts. In this case all constraints that are introduce by this expression can be solved.
+All this information leads to the following method type: $<\xa{Z}{3} \vartriangleleft \nvtt{Int}{}, \ \xa{Z}{4} \vartriangleleft \nvtt{Int}{}>[\xa{Z}{3}, \ \xa{Z}{4}] \to \nvtt{Pair}{\xa{Z}{3}, \ \nvtt{Int}{}}$.

@@ -1,16 +1,37 @@
 The type inference algorithm looks at one class after another. Thus all classes must be ordered in a way that method calls only call methods from classes defined before the current class.
-However, this does not constrain the algorithm as a program where this is not the case can be transformed to a program where it is.
-This transformation is shown in the paper [...].
+However, this does not constrain the program as a program where this is not the case can be transformed to a program where it is.
+This transformation is described in the paper \footnote{Chapter 4.1 Type inference for a program}.
 \\
 In the following it is assumed that a program always fulfills this condition.
+
+\begin{figure}
+    \begin{align*}
+        \text{T} &:= \text{a} \ | \ \text{X} \ | \ \text{N} &\text{type variable, type parameter, non type variable} \\
+        \text{N} &:= \text{C} \vv{\ot{T}} &\text{class type (with type variables)}\\
+        \text{sc} &:= \text{T} < \text{U} \ | \ \text{T} = \text{U} &\text{simple constraint: subtype or equality}\\
+        \text{oc} &:= \{ \{ \ot{sc}_1 \}, \ ..., \{ \ot{sc}_n \} \} &\text{or-constraint}\\
+        \text{c} &:= \text{sc} \ | \ \text{oc} &\text{constraint}\\
+        \text{C} &:= \{ \ot{c} \} &\text{constraint set}\\
+        \lambda &:= \cm : \yp \oto{\text{T}} &\text{method type assumption}\\
+        \eta &:= \text{x} : \text{T} &\text{parameter assumption}\\
+        \sprod{0.7} &:= \sprod{0.7} \cup \overline{\lambda} &\text{method type environment}\\
+        \Theta &:= ( \sprod{0.7}; \overline{\eta} )
+    \end{align*}
+    \caption{Constraint Syntax}
+    \label{constraint_syntax}
+\end{figure}
+
+In Figure \ref{constraint_syntax} the syntax for constraints is defined. New type variables \inl{a} are introduced. There are only two forms of simple-constraints, equal and subtype constraints. An or-constraint represents different possibilities, only one of the simple-constraint sets in an or-constraint must be satisfied.
+A constraint can either be a simple-constraint or an or-constraint. A method type assumption $\lambda$ maps a method name and the class it is defined in to a method type signature. A parameter assumption $\eta$ maps parameters to types.
 
 The algorithm mainly consist of two parts:
 First, constraint generation and second, constraint solving.
 As solving the constraints can lead to multiple solutions for a single class, simply one solution is assumed. If the algorithm later fails, it backtracks and assumes the next solution.
 
 \begin{align*}
-    \text{FJTypeInference}&(\prod, \ \classheader \{ ... \}) = \\
-    \text{let} (\overline{\lambda}, \ \text{C}) &= \text{FJType}(\prod, \classheader \{ ... \}) \\
-    (\sigma, \yp) &= \text{Unify}(\text{C}, \overline{\text{X}} <: \overline{\text{N}}) \\
-    \text{in} \prod \cup \ \{( & \cm \ : \ \yp \ \oto{\sigma(a)}) \ | \ (\cm : \oto{a} ) \in \overline{\lambda} \}
+    \text{FJType}&\text{Inference}(\sprod{0.7}, \ \classheader \{ ... \}) = \\
+    \text{let} & \ (\overline{\lambda}, \ \text{C}) \quad \quad \quad = \text{FJType}(\sprod{0.7}, \classheader \{ ... \}) \\
+    & \ (\sigma, \yp) = \text{Unify}(\text{C}, \overline{\text{X}} <: \overline{\text{N}}) \\
+    \text{in} \ & \sprod{0.7} \cup \ \{( \cm \ : \ \yp \ \oto{\sigma(a)}) \ | \\
+    & \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad (\cm : \oto{a} ) \in \overline{\lambda} \}
 \end{align*}

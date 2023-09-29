@@ -1,0 +1,23 @@
+I have implemented the type inference algorithm for Featherweight Generic Java as describe in the paper\cite{FGJ} given by Stadelmeier et al.
+The implementation includes a parser, a constraint generator and a constraint solver as well as an algorithm to combine them.
+The function \inl{Type} that generates the constraints, is implemented and behaves as it is described in the paper.
+The function \inl{Unify} that solves the constraints may produce more than one solution and thus is implemented as a generator that
+yields one solution after another. From outside \inl{Unify} behaves as it is describe in the paper. However, the implementation slightly
+differs. Especially handling type variables as upper bounds. In the original definition the different solutions are not ordered in any way
+and even are nondeterministic. In this implementation an ordering is introduced, ordering the solutions from most to least specific.
+
+To combine both of those functions the paper defines the function\\\inl{TypeInference}. However this function only combines those functions
+for one class.
+
+In order to make the algorithm usable for more than one class I changed the function \inl{TypeInference} to not only considers one class but a whole
+program. However, this is not complete. It implements a depth first algorithm through the possible solutions. But the first solution found
+may not be a correct one. This can be solved by adding a type checker. If the solution does type check it is a correct one.
+
+Both papers "Global Type Inference for Featherweight Generic Java"\cite{FGJ} and "Featherweight Java: A Minimal Core
+Calculus for Java and GJ"\cite{FJ} define their own typing rules for a Featherweight Generic Java Program which I both implemented\footnote{The rules of "Global Type Inference for Featherweight Generic Java" are defined in FGJ\_typing\_1\\The rules of "Featherweight Java: A Minimal Core Calculus for Java and GJ" are defined in FGJ\_typing\_2}.
+Combining either one with the type inference algorithm imposes different problems which remain to be solved.
+
+The code\footnote{\url{https://github.com/Proglang-Uni-Freiburg/FGJ-inference}} of this implementation can be found online. It comes with a command line tool to run the algorithm on any file that contains a
+Featherweight Generic Program.
+
+A good next step would be to combine the algorithm with one of the type checkers.

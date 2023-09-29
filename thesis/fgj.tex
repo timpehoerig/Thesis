@@ -14,29 +14,31 @@
     \label{syntax}
 \end{figure}
 
+Figure \ref{syntax} defines the syntax of Featherweight Generic Java. Types (\inl{T} and \inl{N}), class definitions (\inl{L}), method definitions (\inl{M}) and expressions (\inl{e}).
+
 \subsection{Types}
 
 There are two different kinds of types (\inl{T}, \inl{U}, \inl{V}) in Featherweight Generic Java.
-Type variables (\inl{X}, \inl{Y}, \inl{Z}) and types other than type variables (\inl{N}, \inl{P}, \inl{Q}).
-Writing \inl{\overline{T}} short for \inl{T_1, T_2, ... T_n}.
+Type parameters (\inl{X}, \inl{Y}, \inl{Z}) and types other than type parameters (\inl{N}, \inl{P}, \inl{Q}).
+Writing $\ot{T}$ short for $\text{T}_1, \text{T}_2, ... \text{T}_n$.
 
 \subsection{Class Definitions}
 
-A class definition \inl{L} always begins with the keyword \inl{class} followed by its name. Then every type variable and its upper bound that are used as a field type in the class definition are declared within \inl{<>} writing \inl{\vartriangleleft} as shortcut for the keyword \inl{extends}.
-Followed by the name of the superclass. In the body of a classdefinition the fields (\inl{f}, \inl{g}) of the class are defined, writing their types infront of them. Followed by the optional constructor \inl{K} and all methoddefinitions \inl{\overline{M}}.
+A class definition \inl{L} always begins with the keyword \inl{class} followed by its name. Then every type parameter and its upper bound that are used as a field type in the class definition are declared within \inl{<>} writing $\vartriangleleft$ as shortcut for the keyword \inl{extends}.
+Followed by the name of the superclass. In the body of a class definition the fields (\inl{f}, \inl{g}) of the class are defined, writing their types infront of them. Followed by the optional constructor \inl{K} and all method definitions $\ot{M}$.
 
-\subsection{Methoddefinition}
+\subsection{Method Definition}
 
-As this is a type inference algorithm every type annotations of methods can be dropped. Leading a method definition only to consist of its name \inl{m}, its arguments \inl{\overline{x}} and a single expression \inl{e} wich is returned.
+As this is a type inference algorithm every type annotations of methods can be dropped. Leading a method definition only to consist of its name \inl{m}, its arguments $\ot{x}$ and a single expression \inl{e} which is returned.
 
 \subsection{Expressions}
 
 An expression \inl{e} can be in five different forms. First, a simple variable \inl{x}. Second, a field lookup written \inl{e.f}. Third, a method invocation that takes one expression for each argument. Fourth, an object creation indicated by the keyword \inl{new} followed by the name of the new Object and its arguments. Fifth, a cast.
-A cast binds less than any other expression. Notice how methodcalls and object creation do not need any instanciation of their generic type annotations.
+A cast binds less than any other expression. Method calls and object creation do not need any instantiation of their generic type annotations.
 
-\subsection{Typeannotation}
+\subsection{Type Annotation}
 
-Every typeannotation except for field types and their upper bounds in classdefinitions can be dropped.
+Every type annotation except for field types and their upper bounds in class definitions can be dropped.
 
 \subsection{Constructor}
 
@@ -45,8 +47,8 @@ Every typeannotation except for field types and their upper bounds in classdefin
 \end{align*}
 
 In Featherweight Java as well as in Featherweight Generic Java a constructor is always required. The constructor has always the same form.
-The name of the constructor is always the name of the class itself. For every field it takes excatly one argument wich must have the same name as the field it belongs to.
-The body of the constructor always consists of two parts. First, a call to super, in wich all arguments with fieldnames defined in superclasses are passed on.
-Second, every other argument is initialised in the form \inl{this.f=f}.
+The name of the constructor is always the name of the class itself. For every field of the class the constructor takes exactly one argument which must have the same name as the field it belongs to.
+The body of the constructor always consists of two parts. First, a call to super, in which all arguments with field names defined in superclasses are passed on.
+Second, every other argument is initialized in the form \inl{this.f=f}.
 
 As a constructor does not contain any information that cannot be found somewhere else in the class definition, writing the constructor for every class definition is redundant and can be dropped in this implementation.
