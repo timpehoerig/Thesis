@@ -13,7 +13,7 @@ method defined in the current class together with a constraint set.
 
 Then \inl{Unify} with that constraint set is called. \inl{Unify} needs a mapping from every type parameter that occurs in the constraint set to its upper bound (which is a non type variable).
 Type parameters that may occur are the field types of the current class and type parameter in method types from methods defined in earlier classes that are overridden in the current class definition.
-The upper bounds of the field types can be directly read of the class definition. The upper bounds of the type variables occurring in method types can be read of the method type assumption that is returned from the call to \inl{Type}.
+The upper bounds of the field types can be directly read off the class definition. The upper bounds of the type variables occurring in method types can be read off the method type assumption that is returned from the call to \inl{Type}.
 Both together are passed to \inl{Unify}.
 
 \inl{Unify} returns a generator that yields every possible solution, one at a time. The following steps are done for every possible solution by simply looping over them.

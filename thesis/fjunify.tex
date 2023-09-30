@@ -94,7 +94,7 @@ This is done by exhaustively applying the rules sub-elimination and erase.
 
 \subsubsection{Step 6}
 The constraint set C is divided in $\text{C}_<$ and in $\text{C}_=$ where $\text{C}_<$ contains all subtype constraints and $\text{C}_=$ all equal constraints.
-Then new generic type parameters $\ot{Y}$ are generated, one for each constraint in $\text{C}_<$. Now the substitution $\sigma$ and the mapping from $\ot{Y}$ to their upper bounds can be read of as follows:
+Then new generic type parameters $\ot{Y}$ are generated, one for each constraint in $\text{C}_<$. Now the substitution $\sigma$ and the mapping from $\ot{Y}$ to their upper bounds can be read off as follows:
 
 \begin{align*}
     \sigma &= \{ \text{b} \to \tsxsn{Y}{a}{T} \ | \ (\text{b} = \text{T}) \in \text{C}_= \} \cup \{ \ot{a} \to \ot{Y} \} \cup \{ \text{b} \to \text{X} \ | \ (\text{b} < \text{X}) \in \text{C}_< \}\\

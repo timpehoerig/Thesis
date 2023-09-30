@@ -1,6 +1,6 @@
-The type inference algorithm looks at one class after another. Thus all classes must be ordered in a way that method calls only call methods from classes defined before the current class.
-However, this does not constrain the program as a program where this is not the case can be transformed to a program where it is.
-This transformation is described in the paper \footnote{Chapter 4.1 Type inference for a program}.
+The type inference algorithm looks at one class after another. Thus, all classes must be ordered in a way that method calls only call methods from classes defined before the current class.
+However, this does not constrain the program. A program that does not respect this order can be transformed to a program that does.
+This transformation is described in the paper\footnote{Chapter 4.1 Type inference for a program}.
 \\
 In the following it is assumed that a program always fulfills this condition.
 
@@ -21,11 +21,10 @@ In the following it is assumed that a program always fulfills this condition.
     \label{constraint_syntax}
 \end{figure}
 
-In Figure \ref{constraint_syntax} the syntax for constraints is defined. New type variables \inl{a} are introduced. There are only two forms of simple-constraints, equal and subtype constraints. An or-constraint represents different possibilities, only one of the simple-constraint sets in an or-constraint must be satisfied.
-A constraint can either be a simple-constraint or an or-constraint. A method type assumption $\lambda$ maps a method name and the class it is defined in to a method type signature. A parameter assumption $\eta$ maps parameters to types.
+In Figure \ref{constraint_syntax} the syntax for constraints is defined. New type variables \inl{a} are introduced. There are only two forms of simple constraints: equal and subtype constraints. An or-constraint represents different possibilities. Only one of the simple constraint sets in an or-constraint must be satisfied.
+A constraint can either be a simple constraint or an or-constraint. A method type assumption $\lambda$ maps a method name and the class it is defined in to a method type signature. A parameter assumption $\eta$ maps parameters to types.
 
-The algorithm mainly consist of two parts:
-First, constraint generation and second, constraint solving.
+The algorithm mainly consists of two parts: constraint generation and constraint solving.
 As solving the constraints can lead to multiple solutions for a single class, simply one solution is assumed. If the algorithm later fails, it backtracks and assumes the next solution.
 
 \begin{align*}
