@@ -1,5 +1,5 @@
-The function \inl{FJUnify} solves a constraint set. Solving the constraints may lead to no, one or more possible solutions. If there is more than one solution simply the first solution is chosen. If there is no solution the overall algorithm backtracks to the last class where there was more than one solution and assumes the next one, then starts again from there.
-A solution is found if the constraint set can be transformed into solved form. A constraint set is in solved from if it only contains constraints of the following four forms:
+The function \inl{FJUnify} solves a constraint set. Solving the constraints may lead to no, one or more possible solutions. If there is more than one solution, simply the first solution is chosen. If there is no solution, the overall algorithm backtracks to the last class where there was more than one solution and assumes the next one. Then, it starts again from there.
+A solution is found, if the constraint set can be transformed into solved form. A constraint set is in solved from, if it only contains constraints of the following four forms:
 
 \begin{align*}
     1.& \quad \text{a} < \text{b}\\
@@ -13,10 +13,10 @@ A solution is found if the constraint set can be transformed into solved form. A
     \text{No variable is allowed to occur } & \text{twice on the left side of rules 3 and 4.}
 \end{align*}
 
-\inl{Unify} takes two arguments: First the constraint set to solve. Second, a mapping from type parameters \inl{X} to their upper bound \inl{N} this mapping represents the type parameters and their upper bounds of the current class that the overall algorithm is currently checking.
+\inl{Unify} takes two arguments: First, the constraint set to solve. Second, a mapping from type parameters \inl{X} to their upper bound \inl{N}. This mapping represents the type parameters and their upper bounds of the current class that the overall algorithm is currently checking.
 In order to not need a special treatment for these type parameters all type parameters $X_i$ are treated as parameterless classes $X_i$<> with superclass $N_i$.
-The constraint set \inl{C} given to \inl{Unify} may contain multiple or-constraints. Flattening them to constraint sets \inl{C}' that only contain simple-constraints leads to multiple \inl{C}' that together cover all possible combinations of constraints.
-The following steps are done for the first \inl{C}' if this leads to a solution, \inl{TypeInference} continues with the next class. Otherwise, the next \inl{C}' is tried.
+The constraint set \inl{C} given to \inl{Unify} may contain multiple or-constraints. Flattening them to constraint sets \inl{C}' that only contain simple constraints leads to multiple \inl{C}' that together cover all possible combinations of constraints.
+The following steps are done for the first \inl{C}'. If this leads to a solution, \inl{TypeInference} continues with the next class. Otherwise, the next \inl{C}' is tried.
 
 \subsubsection{Step 1}
 The rules defined in Figure \ref{resolve_rules} are applied exhaustively to \inl{C}'.
@@ -46,17 +46,17 @@ The rules defined in Figure \ref{resolve_rules} are applied exhaustively to \inl
 \end{figure}
 
 For \inl{match} and \inl{adopt} in this implementation also the dual rules are defined.
-Thus only the highest non variable type can have an illegal upper bound by a type variable.
+Thus, only the highest non variable type can have an illegal upper bound by a type variable.
 This decreases the amount of or-constraints generated.
 
 \subsubsection{Step 2}
-Check if one of the following cases applies, if not the constraint set is in solved form:\\
-1. $\{ \nvt{C}{T} < \nvt{D}{U} \}$ where \inl{C} cannot be a subtype of \inl{D}, as result \inl{C}' has no solution.\\
-2. $\{ a < \nvt{C}{T}, \ a < \nvt{D}{U} \}$ where \inl{C} cannot be a subtype of \inl{D} and vise versa. So \inl{C}' has no solution.\\
+Check if one of the following cases applies. If not the constraint set is in solved form:\\
+1. $\{ \nvt{C}{T} < \nvt{D}{U} \}$ where \inl{C} cannot be a subtype of \inl{D}. As a result \inl{C}' has no solution.\\
+2. $\{ a < \nvt{C}{T}, \ a < \nvt{D}{U} \}$ where \inl{C} cannot be a subtype of \inl{D} and vice versa. So \inl{C}' has no solution.\\
 3. $\{ \nvt{C}{T} < a \}$\\
 \\
-In the last case the non variable type $\nvt{C}{T}$ has an upper bound which is not a non variable type but a type variable which is not allowed in Featherweight Generic Java.
-This is solved by first searching the upper bound constraint of \inl{a}, if no such constraint exists \inl{Object} is chosen as the upper bound. Then for every possible class
+In the last case the non variable type $\nvt{C}{T}$ has an upper bound. This upper bound is a type variable \inl{a} which is not allowed in Featherweight Generic Java.
+This is solved by first searching the upper bound constraint of \inl{a}. If no such constraint exists, \inl{Object} is chosen as the upper bound. Then, for every possible class
 from $\nvt{C}{T}$ up to the upper bound an or-constraint is generated which then replaces the one or two constraints it was generated from.
 The or-constraint is generated as follows:
 
@@ -66,10 +66,10 @@ The or-constraint is generated as follows:
     \text{where} \ \ot{P} \ \text{is determined by } & \Delta \vdash \nvt{C}{X} < \nvt{D}{P} \ \text{and} \ \tsxsns{T}{X}{P} = \ot{U}\\
 \end{align*}
 
-Such an upper bound constraint can also be implied by two or more other constraints of the form (\inl{a} < $\nvt{C}{T}$) and (\inl{a} $<^*$ \inl{b}). \inl{b} can either be a subtype of $\nvt{C}{T}$ in this case everything is fine, or it can be an upper bound to $\nvt{C}{T}$.
-The later case implies the constraint ($\nvt{C}{T}$ < \inl{b}). This constraint can be handled the same way as a direct upper bound constraint but the possibility of \inl{b} being a subtype of $\nvt{C}{T}$ needs to be taken into account. Thus the constraint (\inl{b} < $\nvt{C}{T}$) is added as an own possibility to the or-constraint.
+Such an upper bound constraint can also be implied by two or more other constraints of the form (\inl{a} < $\nvt{C}{T}$) and (\inl{a} $<^*$ \inl{b}). \inl{b} can either be a subtype of $\nvt{C}{T}$ or it can be an upper bound to $\nvt{C}{T}$. In the first case everything is fine.
+The latter case implies the constraint ($\nvt{C}{T}$ < \inl{b}). This constraint can be handled the same way as a direct upper bound constraint. Only the possibility of \inl{b} being a subtype of $\nvt{C}{T}$ needs to be taken into account. Thus, the constraint (\inl{b} < $\nvt{C}{T}$) is added as an own possibility to the or-constraint.
 
-Now \inl{C}' again may contain or-constraints. The constraint set \inl{C}' is flattened once again and the following steps are done for each simple-constraint set \inl{C}''.
+Now, \inl{C}' again may contain or-constraints. The constraint set \inl{C}' is flattened once again and the following steps are done for each simple constraint set \inl{C}''.
 
 \subsubsection{Step 3}
 The following rule is applied exhaustively to C''.
@@ -79,10 +79,10 @@ The following rule is applied exhaustively to C''.
 \end{align*}
 
 \subsubsection{Step 4}
-If the constraint set C'' was changed by the rule \inl{subst}, the algorithm starts over with C'' from step 1.
+If the constraint set C'' has changed after applying the rule \inl{subst}, the algorithm starts over with C'' from step 1.
 
 \subsubsection{Step 5}
-Now the constraint set C'' is in solved form. Constraints of the first form (a < b) do not bring any information with them, thus these constraints can be eliminated.
+Now, the constraint set C'' is in solved form. Constraints of the first form (a < b) do not bring any information with them. Thus, these constraints can be eliminated.
 This is done by exhaustively applying the rules sub-elimination and erase.
 
 \begin{align*}
@@ -93,8 +93,8 @@ This is done by exhaustively applying the rules sub-elimination and erase.
 \end{align*}
 
 \subsubsection{Step 6}
-The constraint set C is divided in $\text{C}_<$ and in $\text{C}_=$ where $\text{C}_<$ contains all subtype constraints and $\text{C}_=$ all equal constraints.
-Then new generic type parameters $\ot{Y}$ are generated, one for each constraint in $\text{C}_<$. Now the substitution $\sigma$ and the mapping from $\ot{Y}$ to their upper bounds can be read off as follows:
+The constraint set C is divided in $\text{C}_<$ and in $\text{C}_=$. $\text{C}_<$ contains all subtype constraints and $\text{C}_=$ all equal constraints.
+Then, new generic type parameters $\ot{Y}$ are generated: one for each constraint in $\text{C}_<$. Now, the substitution $\sigma$ and the mapping from $\ot{Y}$ to their upper bounds can be read off as follows:
 
 \begin{align*}
     \sigma &= \{ \text{b} \to \tsxsn{Y}{a}{T} \ | \ (\text{b} = \text{T}) \in \text{C}_= \} \cup \{ \ot{a} \to \ot{Y} \} \cup \{ \text{b} \to \text{X} \ | \ (\text{b} < \text{X}) \in \text{C}_< \}\\

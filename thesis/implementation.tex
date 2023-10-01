@@ -1,18 +1,18 @@
-This Global Type Inference algorithm is implemented in Python (3.10).
+This global type inference algorithm is implemented in Python (3.10).
 
-Python is not a functional language, hence data structures like lists, dictionaries and sets are mutable. That imposes a problem because mutable data structures are not hashable but entries of sets must be. Having a set of sets is not possible.
-In order to solve this problem all sets, lists and dictionaries are made immutable by using frozenlists, frozensets and frozendictionaries. As frozensets come with the default library they can be used easily. In order to have frozenlists and frozendicts the python libraries \inl{FrozenList} and \inl{frozendict} are used.\\
-One important environment that is passed to almost every functions but never mentioned in the abstract definitions is the \inl{Class Table}. The Class Table or short CT is a mapping from class names to their class definitions. This environment is filled at the parsing step and never changed afterwards. This environment makes it easy to have full access to any class at any time only by having their name.\\
+Python is not a functional language, hence data structures like lists, dictionaries and sets are mutable. That imposes a problem, because mutable data structures are not hashable but entries of sets must be. Having a set of sets is not possible.
+In order to solve this problem all sets, lists and dictionaries are made immutable by using frozen lists, frozen sets and frozen dictionaries. As frozen sets come with the default library they can be used without difficulty. In order to have frozen lists and frozen dictionaries the python libraries \inl{FrozenList} and \inl{frozendict} are used.\\
+One important environment that is passed to almost every function, but is never mentioned in the abstract definitions, is the \inl{Class Table}. The Class Table or short CT is a mapping from class names to their class definitions. This environment is filled at the parsing step and never changes afterwards. This environment makes it easy to have full access to any class at any time only by having their name.\\
 
 \subsection{TypeInference}
 
-The function \inl{TypeInference} connects constraint generation with constraint solving. The implementation of it differs from the idea describe in the paper.
-Classes are processed one after another, thus every class has access to the method types inferred for all methods that are defined in earlier classes.
-First, \inl{Type} is called. The current class and the method type environment containing all the method type assumptions of earlier classes are given as arguments. It returns a method type assumption for every
+The function \inl{TypeInference} connects constraint generation with constraint solving. The implementation of it differs from the idea described in the paper.
+Classes are processed one after another. Thus, every class has access to the method types inferred for all methods that are defined in earlier classes.
+Firstly, \inl{Type} is called. The current class and the method type environment containing all the method type assumptions of earlier classes are given as arguments to \inl{Type}. It returns a method type assumption for every
 method defined in the current class together with a constraint set.
 
-Then \inl{Unify} with that constraint set is called. \inl{Unify} needs a mapping from every type parameter that occurs in the constraint set to its upper bound (which is a non type variable).
-Type parameters that may occur are the field types of the current class and type parameter in method types from methods defined in earlier classes that are overridden in the current class definition.
+Then, \inl{Unify} with that constraint set is called. \inl{Unify} needs a mapping from every type parameter that occurs in the constraint set to its upper bound, which is a non type variable.
+Type parameters that may occur are the field types of the current class and type parameter of method types in the method type environment, that are overridden in the current class definition.
 The upper bounds of the field types can be directly read off the class definition. The upper bounds of the type variables occurring in method types can be read off the method type assumption that is returned from the call to \inl{Type}.
 Both together are passed to \inl{Unify}.
 
