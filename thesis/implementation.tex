@@ -65,7 +65,7 @@ A simple but not efficient way to solve this problem is to restart the for-loop 
 Rules have different amounts of constraints as preconditions. For rules that have more than one precondition every possible combination of constraints must be considered. Rules that take arbitrary many subtype constraints on type variables can be implemented very easily by taking just one (in case of the rule \inl{equals}) or none (in case of \inl{adopt}) subtype constraints on type variables.
 Then, the two type variables that occur in the constraints (either in the subtype constraint on type variables or in the two other constraints that are needed for \inl{adopt}) are checked, if they are in any case subtype related.
 This leads to a maximum of two preconditions, thus two nested for-loops over the constraint set are needed.
-The decision of which rule to apply is made by pattern matching against subtype or equal constraints and on the types occurring in them.
+The decision of which rule to apply is made by case splitting the subtype or equal constraints and on the types occurring in them.
 The rules \inl{match} and \inl{adapt} need a check if two types are subtype related. This is done with the function \inl{genericSupertype}.
 
 The rule \inl{adopt} imposes a problem. If the upper bound of \inl{b} is not \inl{Object} but the upper bound of \inl{a} is, then the constraint \{\inl{b} < \inl{Object}\} is added. However, this constraint together with the original subtype constraint on \inl{b} can be resolved with \inl{match} and \inl{reduce} resulting in a constraint set equivalent to the constraint set at the beginning.
@@ -213,7 +213,7 @@ The last thing to do is to add the upper bounds to all new generic types so we o
 
 A more advanced example is shown in Figure \ref{example2}.
 
-\begin{figure}[H]
+\begin{figure}[tp]
     \begin{minted}[escapeinside=||]{java}
         |\pink{class} \green{Int}|<> |\pink{extends} \green{Object}|<> {
           id(x) {

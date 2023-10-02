@@ -18,7 +18,7 @@ The second rule (2) is short for $[\text{T}_1/\text{X}_1, \ ... \ , \ \text{T}_n
 \\
 The third rule (3) is short for $[\text{T}_1/\text{X}_1, \ ... \ , \ \text{T}_n/\text{X}_n]\text{N}_1, \ ... \ , \ [\text{T}_1/\text{X}_1, \ ... \ , \ \text{T}_n/\text{X}_n]\text{N}_n$.
 \\
-These rules are implemented in different functions using pattern matching on the different types in \inl{N}.
+These rules are implemented in different functions using case splitting on the different types in \inl{N}.
 
 \subsection{Substitution on constraints}
 
@@ -32,7 +32,7 @@ Substitution is also possible on constraint sets. Type variables can be replaced
 
 \subsection{Subtyping}
 
-\begin{figure}[H]
+\begin{figure}[tp]
     \begin{align*}
 1&: \ \Delta \vdash \text{T} <: \text{T}
 \\
