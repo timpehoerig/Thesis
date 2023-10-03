@@ -1,4 +1,4 @@
-Figure \ref{fjtype} defines the function \verb|FJType|. This function generates constraints for a class. It takes the definition of that class and the method type environment, where all the method signatures that have already been inferred from earlier classes are present.
+Figure \ref{fjtype} defines the function \verb|FJType|. This function generates constraints for a class. It takes the definition of that class and the method type environment, where all method signatures that have already been inferred from earlier classes are present.
 The function returns a tuple consisting of a set of method signatures $\lambda$ with new type variables and a constraint set C which constrains those type variables.
 
 \begin{figure}[tp]
@@ -12,7 +12,7 @@ The function returns a tuple consisting of a set of method signatures $\lambda$ 
         & \quad \quad \quad \quad \quad \quad | \ \text{m} \in \ot{M}, \ \mtype \ \text{not defined}, \ \fresh{\overline{a}} \}\\
         & C_m = \{\{ a_m < \text{Object}, \overline{a} < \ot{Object} \} \ | \ ( \cm : \ \overline{a} \ \to a_m) \in \overline{\lambda}' \} \\
         & \sprod{0.7} = \sprod{0.7} \cup \overline{\lambda}' \cup \overline{\lambda}_0\\
-    \text{in} \ &(\sprod{0.7}, C_0 \cup C_m \cup \bigcup_{ \text{m} \in \ot{m} } \text{TYPEMethod}(\sprod{0.7}, C \vv{\ot{X}}, \text{m}))\\
+    \text{in} \ &(\sprod{0.7}, C_0 \cup C_m \cup \bigcup_{ \text{m} \in \ot{M} } \text{TYPEMethod}(\sprod{0.7}, C \vv{\ot{X}}, \text{m}))\\
     \end{align*}
     \caption{FJType}
     \label{fjtype}
@@ -35,11 +35,11 @@ The method type environment and the generated constraints together with the cons
 \end{align*}
 
 \verb|TYPEMethod| takes the method type environment, the class header $\nvt{C}{X}$ of the class that is currently checked and the method definitions as arguments.
-It first brings the type signature of the current method in scope and then calls \verb|TYPEMethod| on the expression \verb|e| inside the method's body. In this call a type environment for variables is created. Where \verb|this| has the type $\nvt{C}{T}$ and the types of the method's arguments are inferred from the type signature which was brought into the scope earlier.
-\verb|TYPEMethod| returns a tuple of the type \verb|R| of \verb|e| and the generated constraints. The generated constraints together with the constraint, that \verb|R| must be a subtype of the return type of the method signature is returned.
+It first brings the type signature of the current method in scope and then calls \verb|TYPEExpr| on the expression \verb|e| inside the method's body. In this call a type environment for variables is created. Where \verb|this| has the type $\nvt{C}{T}$ and the types of the method's arguments are inferred from the type signature which was brought into the scope earlier.
+\verb|TYPEExpr| returns a tuple of the type \verb|R| of \verb|e| and the generated constraints. The generated constraints together with the constraint, that \verb|R| must be a subtype of the return type of the method signature is returned.
 
 \subsection{Expression Type}
-The last function for generating constraints is \verb|TYPEMethod|. It takes the method type environment, the variable type environment created by \verb|TYPEMethod| and an expression \verb|e| as arguments.
+The last function for generating constraints is \verb|TYPEExpr|. It takes the method type environment, the variable type environment created by \verb|TYPEMethod| and an expression \verb|e| as arguments.
 The expression \verb|e| is matched against the five possible forms for an expression and is handled differently for each.
 
 \subsection{Variable}
@@ -48,7 +48,7 @@ The expression \verb|e| is matched against the five possible forms for an expres
     \texpr{\text{x}} = (\overline{\eta} (\text{x}), \emptyset)\\
 \end{align*}
 
-If the expression is a simple variable its type is looked up in the variable type environment. Its type together with an empty set is returned. The empty set is returned because a simple variable does not generate any constraints.
+If the expression is a variable its type is looked up in the variable type environment. Its type together with an empty set is returned. The empty set is returned because a simple variable does not generate any constraints.
 
 \subsection{Field Lookup}
 
@@ -61,7 +61,7 @@ If the expression is a simple variable its type is looked up in the variable typ
     \text{in} \ \ & (\text{a}, (\text{C}_R \cup \{ \text{c} \} ))
 \end{align*}
 
-In case of a field lookup \verb|e.f| first the \verb|TYPEMethod| function is called recursively on the expression \verb|e|, returning a
+In case of a field lookup \verb|e.f| first the \verb|TYPEExpr| function is called recursively on the expression \verb|e|, returning a
 type R and a constraint set $C_R$. Now, the difficult part is to deduce which class the field \verb|f| belongs to. The solution is simple:
 Just generate a constraint set for every class \verb|C| that has the field \verb|f| defined and put them together in one big or-constraint.
 The constraint set for one class consists of three kinds of constraints: One that constrains the returned type R to be a subtype
@@ -82,13 +82,13 @@ to be equal to the type of the corresponding field in \verb|C|. And finally, one
 \end{align*}
 
 A method invocation imposes the same problem that a field lookup did and thus is solved in a similar way. But first, for the
-expression that the method \verb|M| is invoked on and every expression that is passed as an argument to \verb|M|, \verb|TYPEMethod|
-is called recursively on. Then, for every method signature of a method named \verb|M| in the method type environment a constraint
+expression that the method \verb|m| is invoked on and every expression that is passed as an argument to \verb|m|, \verb|TYPEExpr|
+is called recursively. Then, for every method signature of a method named \verb|m| in the method type environment a constraint
 set is generated. This set of constraints contains five kinds of constraints: Three of them are very similar to the ones generated for a
 field lookup except that two different kinds of fresh type variables are created. One for every generic type parameter the class has and
-one for every generic type parameter the method signature has. The other two constraints are new. The first constraint restricts the type of the arguments for \verb|M| to be subtypes of the
+one for every generic type parameter the method signature has. The other two constraints are new. The first constraint restricts the type of the arguments for \verb|m| to be subtypes of the
 argument types imposed by the method signature. The second constraint restricts all fresh type variables generated for the type parameters
-of the method signature to be a subtype of the corresponding bounding types. All those constraint sets for method signatures of method \verb|M| are put together to one big or-constraint which then is returned.
+of the method signature to be a subtype of the corresponding bounding types. All those constraint sets for method signatures of method \verb|m| are put together to one big or-constraint which then is returned.
 
 \subsection{Object Creation}
 
@@ -102,7 +102,7 @@ of the method signature to be a subtype of the corresponding bounding types. All
     \text{in} \ \ & ( \nvt{C}{a}, \text{C} \cup \bigcup_{i} \text{C}_i )
 \end{align*}
 
-The constraints generated for an object creation are rather simple. \verb|TYPEMethod| is called recursively for every argument. Then, the types of all
+The constraints generated for an object creation are rather simple. \verb|TYPEExpr| is called recursively for every argument. Then, the types of all
 fields of the class that the new object is an instance of are brought in scope via the \verb|fields| function. Thus, for every field a fresh type variable is introduced.
 Those fresh type variables must be subtypes of their corresponding upper bound and all returned types of the recursive calls have to be subtypes of the field they are bound to.
 
@@ -114,4 +114,4 @@ Those fresh type variables must be subtypes of their corresponding upper bound a
     \text{in} \ \ &(\text{N}, \text{C})
 \end{align*}
 
-For a cast the \verb|TYPEMethod| is called recursively on the expression that is casted. This recursive call returns a type and a constraint set. However, instead of returning that type, the type the expression is casted to and the constraint set are returned.
+For a cast the \verb|TYPEExpr| is called recursively on the expression that is casted. This recursive call returns a type and a constraint set. However, instead of returning that type, the type the expression is casted to and the constraint set are returned.

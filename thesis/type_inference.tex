@@ -1,3 +1,4 @@
+Full type inference is only possible if a program does not contain polymorphic recursion.
 The type inference algorithm looks at one class after another. Thus, all classes must be ordered in a way that method calls only call methods from classes defined before the current class.
 However, this does not constrain the program. A program that does not respect this order can be transformed to a program that does.
 This transformation is described in the paper\footnote{Chapter 4.1 Type inference for a program}.
@@ -21,11 +22,8 @@ In the following it is assumed that a program always fulfills this condition.
     \label{constraint_syntax}
 \end{figure}
 
-In Figure \ref{constraint_syntax} the syntax for constraints is defined. New type variables \verb|a| are introduced. There are only two forms of simple constraints: equal and subtype constraints. An or-constraint represents different possibilities. Only one of the simple constraint sets in an or-constraint must be satisfied.
+In Figure \ref{constraint_syntax} the syntax for constraints is defined. New type variables \verb|a| are introduced. There are only two forms of simple constraints: equal and subtype constraints. An or-constraint represents different cases of simple constraints. Only one of the simple constraint sets in an or-constraint must be satisfied.
 A constraint can either be a simple constraint or an or-constraint. A method type assumption $\lambda$ maps a method name and the class it is defined in to a method type signature. A parameter assumption $\eta$ maps parameters to types.
-
-The algorithm mainly consists of two parts: constraint generation \verb|FJType| and constraint solving \verb|Unify|.
-When solving the constraints leads to multiple solutions for a single class, simply one solution is assumed. If the algorithm later fails, it backtracks and assumes the next solution.
 
 \begin{align*}
     \text{FJType}&\text{Inference}(\sprod{0.7}, \ \classheader \{ ... \}) = \\
@@ -34,3 +32,6 @@ When solving the constraints leads to multiple solutions for a single class, sim
     \text{in} \ & \sprod{0.7} \cup \ \{( \cm \ : \ \yp \ \oto{\sigma(a)}) \ | \\
     & \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad (\cm : \oto{a} ) \in \overline{\lambda} \}
 \end{align*}
+
+The algorithm mainly consists of two parts: constraint generation \verb|FJType| and constraint solving \verb|Unify|.
+When solving the constraints leads to multiple solutions for a single class, simply one solution is assumed. If the algorithm later fails, it backtracks and assumes the next solution.

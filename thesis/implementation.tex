@@ -33,7 +33,7 @@ If overall no solution is found, the exception \verb|NoSolutionFound| is raised.
 
 \subsection{FJType}
 The implementation of the constraint generation is straight forward. Because every functions is described in pseudo code, most of the functions can easily be translated into python code. \\
-Creating fresh type variables is simply done by instantiating a generator at the beginning that generates type variables in the form of $x_0$, $x_1$, ... where \verb|X| is a string given as argument to the generator instantiation. \\
+Creating fresh type variables is done by instantiating a generator at the beginning that generates type variables in the form of $x_0$, $x_1$, ... where \verb|X| is a string given as argument to the generator instantiation. \\
 
 \subsection{FJUnify}
 
@@ -78,7 +78,7 @@ Because constraint sets are described and implemented as sets, they do not impos
 This hidden ordering is passed to \verb|gen_C_prime| which flattens the or-constraints. If all possible solutions are considered, this does not change anything.
 However, this may be important in the feature to find the most specific solution.
 
-When no such upper bound constraint with a type variable exists, it can still be implied by other constraints of the form \verb|a| < $\nvtt{C}{T}$ and \verb|a| $<^*$ \verb|b|. The type variable can be a subtype or a supertype of $\nvt{C}{T}$. If it is a supertype, it can be handled by creating an or-constraint as before. However, the possibility of \verb|b| being a subtype of $\nvt{C}{T}$ needs to be considered, too.
+When no such upper bound constraint with a type variable exists, it can still be implied by other constraints of the form \verb|a| < $\nvtt{C}{T}$ and \verb|a| $<^*$ \verb|b|. The type variable can be a subtype or a supertype of $\nvt{C}{T}$. If it is a supertype, it can be handled by creating an or-constraint as before. However, the case of \verb|b| being a subtype of $\nvt{C}{T}$ needs to be considered, too.
 In order to do so the subtype constraint \verb|b| < $\nvtt{C}{T}$ is added to the or-constraint. If such a subtype constraint is added to the or-constraint it is always added as first possible solution.
 
 \subsection{Example}
@@ -102,7 +102,7 @@ Firstly, we look at \verb|FJType| and then at \verb|Unify|.
 \\
 \\
 In the following the fresh introduced type variables have the form $a_0$, $a_1$, ... the number respects the order in which they are generated. In the following description the variables do not occur in the right order. This is because the algorithm is recursive and explaining the algorithm is easier
-if some information is given that in the algorithm itself would be known later. The name of the type variables does not matter and could be different. This is simply done to showcase the order of which the type variables are generated.
+if some information is given that in the algorithm itself would be known later. The names of type variables do not matter and could be different. This is done to showcase the order of which the type variables are generated.
 
 In the following, multiple arguments to a function are represented in a list. Thus, ($\oto{\text{a}}$) is equivalent to ($[\text{a}_1, \ \text{a}_2, \ ...] \to \text{a}_0$).
 
@@ -120,12 +120,12 @@ Nextly, for every method defined in \verb|Pair| the function \verb|TYPEMethod| w
 In this case the method \verb|setfst| is only called once. \verb|TYPEMethod| creates the local variable type environment where \verb|this| has type \verb|Pair<X, Y>| (\verb|this| always refers to the class it is in, which in this case is \verb|Pair|) and \verb|newfst| has type $a_1$.
 
 Then, the body of \verb|setfst| is processed. The body of a method is always one expression. Here it is an object creation of \verb|Pair|.
-At first, we get the types of the fields of \verb|Pair<X, Y>| while substituting \verb|X| and \verb|Y| by some fresh type variables $a_5$ and $a_6$. Both of them need to be subtypes of \verb|Object|. Because all fields are defined in the current class, this result in the types $a_5$ and $a_6$. Now, we process the arguments of \verb|new Pair(newfst, this.snd)|.
-The first argument is \verb|newfst| which is a simple variable. We know it must be a subtype of $a_5$, if we lookup the type of the variable \verb|newfst| in the variable type environment. We obtain that \verb|newfst| has type $a_1$. Thus, the constraint $a_1$ < $a_5$ is generated.
-The second argument is \verb|this.snd| which is a field lookup. We again know it must be a subtype of $a_6$. A fresh type variable $a_2$ is introduced to represent the type of \verb|this.snd|, thus we obtain the constraint $a_2$ < $a_6$.
-$a_2$ represents \verb|this.snd| which can be further constrained. We know \verb|this| is a simple variable of type \verb|Pair<X, Y>|.
+At first, we get the types of the fields of \verb|Pair<X, Y>| while substituting \verb|X| and \verb|Y| by some fresh type variables $a_5$ and $a_6$. Both of them need to be subtypes of \verb|Object| and thus we add two subtyping constraints. Because all fields are defined in the current class, this result in the types $a_5$ and $a_6$. Now, we process the arguments of \verb|new Pair(newfst, this.snd)|.
+The first argument is \verb|newfst| which is a variable. We know that \verb|newfst| must be a subtype of $a_5$, if we lookup the type of the variable \verb|newfst| in the variable type environment. We obtain that \verb|newfst| has type $a_1$. Thus, the constraint $a_1$ < $a_5$ is generated.
+The second argument is \verb|this.snd| which is a field lookup. We again know \verb|this.snd| must be a subtype of $a_6$. A fresh type variable $a_2$ is introduced to represent the type of \verb|this.snd|, thus we obtain the constraint $a_2$ < $a_6$.
+The type variable $a_2$ represents \verb|this.snd| which can be further constrained. We know \verb|this| is a variable of type \verb|Pair<X, Y>|.
 Now, for every class where the field \verb|snd| is defined we generate an or-constraint. Here, \verb|Pair<X, Y>| is the only class with the field \verb|snd|. Thus, in this or-constraint \verb|this| is a subtype of \verb|Pair<X, Y>| where we substitute some fresh type variables for \verb|X| and \verb|Y| resulting in the constraint \verb|Pair<X, Y>| < \verb|Pair<|$a_3$, $a_4$\verb|>|.
-In the case that the field \verb|snd| refers to the class \verb|Pair<|$a_3$, $a_4$\verb|>| we obtain that $a_2$ is equal to $a_3$. Both $a_3$ and $a_4$ need to be subtypes of \verb|Object|.
+In the case that the field \verb|snd| refers to the class \verb|Pair<|$a_3$, $a_4$\verb|>| we obtain that $a_2$ is equal to $a_3$. Again, both $a_3$ and $a_4$ need to be subtypes of \verb|Object|.
 Now, the constraint set looks like this:
 
 \begin{align*}
@@ -136,7 +136,7 @@ Now, the constraint set looks like this:
 \end{align*}
 
 We know that \verb|setfst| returns a \verb|Pair|. We introduced the type variables $a_5$ and $a_6$ to represent the types of the parameters of the object creation, hence the return type of \verb|setfst| is \verb|Pair<|$a_5$, $a_6$\verb|>|.
-At the beginning, we said the return type of \verb|newfst| is $a_0$ these two things lead to the last constraint \verb|Pair<|$a_5$, $a_6$\verb|>| < $a_0$.
+At the beginning, we specified the return type of \verb|newfst| to be $a_0$. These two facts lead to the last constraint \verb|Pair<|$a_5$, $a_6$\verb|>| < $a_0$.
 Resulting in the full method type environment and constraint set:
 
 \begin{align*}
@@ -151,9 +151,9 @@ Resulting in the full method type environment and constraint set:
 Now, we have all constraints and method types that we need and can start to solve them.
 
 \subsubsection{Unify}
-The first thing that \verb|Unify| does is to resolve the or-constraints. Here, we have only one possibility in the or-constraint, thus we can just add all constraints together to one simple constraint set.
+The first thing that \verb|Unify| does is to resolve the or-constraints. Here, we have only one case in the or-constraint, thus we can just add all constraints together to one simple constraint set.
 Before we go on we need to transform all type parameters to parameterless classes ($\text{X} \to \nvtt{X}{}$).
-Then, we continue with step 1. The only rule that applies to anything is \verb|adapt|.
+Then, we continue with step 1. The only rule that applies to any constraint is \verb|adapt|.
 
 \begin{align*}
     \frac{\cand \{ \nvtt{Pair}{\nvtt{X}{}, \nvtt{Y}{}} < \nvtt{Pair}{\fa{3}, \fa{4}} \} }{\cand \{ \nvtt{Pair}{\nvtt{X}{}, \nvtt{Y}{}} = \nvtt{Pair}{\fa{3}, \fa{4}} \} } \quad \text{adapt}
@@ -174,7 +174,7 @@ Then, the two resolved rules are \verb|swap|ped such that the type variables \ve
 No other rules apply now anymore and we continue with step 2.\\
 
 We find the constraint $\nvtt{Pair}{\fa{5}, \ \fa{6}} < \fa{0}$ which has a type variable as upper bound and thus requires us to resolve it with \verb|expandLB|. We search the upper bound constraint for $a_0$ which is $\fa{0} < \nvtt{Object}{}$.
-Next, we check if $\nvtt{Pair}{\fa{5}, \ \fa{6}}$ can be a subtype of \verb|Object| which is trivially satisfied (because everything is a subtype of \verb|Object|) and thus we know $a_0$ is either $\nvtt{Pair}{\fa{5}, \ \fa{6}}$ or \verb|Object|. We add those two constraints as an or-constraint
+Next, we check if $\nvtt{Pair}{\fa{5}, \ \fa{6}}$ can be a subtype of \verb|Object| which is trivially satisfied and thus we know $a_0$ is either $\nvtt{Pair}{\fa{5}, \ \fa{6}}$ or \verb|Object|. We add those two constraints as an or-constraint
 to the constraint set, but now we have again or-constraints and thus have to flatten the constraint set once again. However, this time the or-constraint has two possible constraint sets resulting overall in two different simple constraint sets which we both have to consider one after the other.
 It is important to look at the constraint set that is more specific first. We continue with step 3 and the first simple constraint set. We can substitute in three different cases: $\fa{2}$ = $\fa{4}$, $\fa{3}$ = $\nvtt{X}{}$ and $\fa{4}$ = $\nvtt{Y}{}$.
 These substitutions change our constraint set and we start again from step 1 with the following constraint set:
@@ -198,11 +198,11 @@ No further rule applies and we can go to step 6. Before we start with step 6 we 
     \text{C}_< &= \{ \fa{1} < \nvtt{Object}{} \}
 \end{align*}
 
-For the subtype constraint we introduce a new type parameter \verb|Z|. Its upper bound is the upper bound of that subtype constraint.
+For the subtype constraint we introduce a new type parameter \verb|Z|. Its upper bound is the upper bound of the subtype constraint it is introduced for.
 We substitute every right hand side of all equal constraints until there are no more occurrences of type variables.
 
-The type signature for \verb|newfst| determined by \verb|FJType| was $[\fa{1}] \to \fa{0}$. If we substitute now, we get the type signature $[\text{Z}] \to \nvtt{Pair}{\text{Z}, \ \text{Y}}$.
-The last thing to do is to add the upper bounds to all new generic types so we obtain the full type signature:
+The type signature for \verb|newfst| determined by \verb|FJType| is $[\fa{1}] \to \fa{0}$. If we substitute now, we get the type signature $[\text{Z}] \to \nvtt{Pair}{\text{Z}, \ \text{Y}}$.
+The last thing to do is to add the upper bounds to all new generic types, thus we obtain the full type signature:
 
 \begin{align*}
     \text{<} \text{Z} \vartriangleleft \nvtt{Object}{}\text{>}[\text{Z}] \to \nvtt{Pair}{\text{Z}, \ \text{Y}}\\
@@ -236,7 +236,7 @@ A more advanced example is shown in Figure \ref{example2}.
           setboth(newfst, newsnd) {
             |\pink{return new} \green{Pair}|(
               |this|.|setfst|(newfst).|fst|,
-              (|\green{int}|<>)|this|.|idd|(newsnd.|id|(newsnd))
+              (|\green{Int}|<>)|this|.|idd|(newsnd.|id|(newsnd))
             );
           }
         }
@@ -248,7 +248,7 @@ A more advanced example is shown in Figure \ref{example2}.
 We process one class after another: The first class does not bring any new features that we have not seen in the first example. The inferred method type of \verb|id| is $<\xa{Z}{0} \vartriangleleft \nvtt{Object}{}>[\xa{Z}{0}] \to \xa{Z}{0}$.
 With this information the next class \verb|SomeMethods| is processed. While processing the body of \verb|idd| we encounter a method call of \verb|id|. Thus, every method with that name in the method type environment is considered. The method type environment
 contains only one method signature: the one for \verb|id| of class \verb|Int|. Thus, we know two things: Firstly, \verb|X| has to be of type \verb|Int|, because \verb|Int| is the only class that defines the method \verb|id|. Secondly, the type signature of \verb|id| states that the argument and the return type must be the same.
-That gives us all the information we need. \verb|X| has to be a subtype of \verb|Int|. \verb|x.id(x)| has the same type as \verb|X|, thus the method type of \verb|idd| is $<\xa{Z}{1} \vartriangleleft \nvtt{Int}{}>[\xa{Z}{1}] \to \xa{Z}{1}$.
+That provides all the information we need. The type parameter \verb|X| has to be a subtype of \verb|Int|. The method call \verb|x.id(x)| has the same type as \verb|X|, thus the method type of \verb|idd| is $<\xa{Z}{1} \vartriangleleft \nvtt{Int}{}>[\xa{Z}{1}] \to \xa{Z}{1}$.
 Next, we process the class \verb|Pair|. The first method \verb|setfst| is the same as in the previous example and thus has the same type. The only difference is that the generic type parameters of \verb|Pair| are bound by \verb|Int| rather than \verb|Object|.
 This changes the upper bound in the method type. Hence, the method type of \verb|setfst| is $<\xa{Z}{2} \vartriangleleft \nvtt{Int}{}>[\xa{Z}{2}] \to \nvtt{Pair}{\xa{Z}{2}, \ \text{Y}}$.
 The last method \verb|setboth| contains every possible expression there is: variables, a field lookup, method calls, object creation and a cast.

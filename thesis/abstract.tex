@@ -1,7 +1,6 @@
 Type systems are an essential and powerful part of every modern programming language.
-However, to be forced to explicitly specify every type signature can be tiring or
-determining the most general types can even be difficult.
-By making type systems able to infer types by themselves these problems become obsolete.
-We describe and implement a global type inference algorithm for Featherweight Generic Java: a minimal core calculus for Java (Featherweight Java) extended with generics.
-The type inference algorithm is able to infer all method types for a program with specified class headers and field types which does not use polymorphic recursion.
-This type inference algorithm was developed by Andreas Stadelmeier, Martin Plümicke and Peter Thiemann in the paper: "Global Type Inference for Featherweight Generic Java"
+However, to be forced to explicitly specify every type signature can be tiring.
+Type inference algorithms relieve the programmer from the burden to write type signatures themselves.
+My work describes and implements a global type inference algorithm for Featherweight Generic Java: a minimal core calculus for Java with support for generics.
+The type inference algorithm is able to infer all method types for a program with specified class headers and field types.
+Originally, the inference algorithm was developed by Andreas Stadelmeier, Martin Plümicke and Peter Thiemann in the paper: "Global Type Inference for Featherweight Generic Java".

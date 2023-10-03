@@ -67,7 +67,7 @@ The or-constraint is generated as follows:
 \end{align*}
 
 Such an upper bound constraint can also be implied by two or multiple other constraints of the form \verb|a| < $\nvt{C}{T}$ and \verb|a| $<^*$ \verb|b|. \verb|b| can either be a subtype of $\nvt{C}{T}$ or it can be an upper bound to $\nvt{C}{T}$. In the first case everything is fine.
-The latter case implies the constraint $\nvt{C}{T}$ < \verb|b|. This constraint can be handled the same way as a direct upper bound constraint. Only the possibility of \verb|b| being a subtype of $\nvt{C}{T}$ needs to be taken into account. Thus, the constraint \verb|b| < $\nvt{C}{T}$ is included as an additional possibility in the or-constraint.
+The latter case implies the constraint $\nvt{C}{T}$ < \verb|b|. This constraint can be handled the same way as a direct upper bound constraint. Only the case of \verb|b| being a subtype of $\nvt{C}{T}$ needs to be taken into account. Thus, the constraint \verb|b| < $\nvt{C}{T}$ is included as an additional case in the or-constraint.
 
 Now, \verb|C|' again may contain or-constraints. The constraint set \verb|C|' is flattened once again and the following steps are done for each simple constraint set \verb|C|''.
 
