@@ -3,7 +3,7 @@
 Having a program in plain text form is rather useless for running the type inference algorithm. Instead, having the program in a specific form where class definitions can be accessed and traversed is desirable.
 Such a form is called an Abstract Syntax Tree short AST. Every node in this AST is represented by a dataclass in Python \footnote{FGJ\_AST.py}.
 
-The entry point for full program is the class \verb|Program|.
+The entry point for a full program is the class \verb|Program|.
 \begin{minted}[escapeinside=||]{python}
     [...]
 
@@ -16,7 +16,7 @@ The entry point for full program is the class \verb|Program|.
         expression: Expression
 \end{minted}
 
-The class \verb|Program| has two fields: \verb|CT| and \verb|expression|. \verb|CT|, short for class table, is a mapping from every class name to its definition. \verb|expression| is an expression to be evaluated.
+The class \verb|Program| has two fields: \verb|CT| and \verb|expression|. \verb|CT|, short for class table, is a mapping from every class name to its definition. The field \verb|expression| is an expression to be evaluated.
 
 The implementation of types, class definitions, method definitions and expressions are straight forward adaptations of their formal definitions in the paper.
 
@@ -32,7 +32,7 @@ Here, an example for the class definition \verb|ClassDef|:
 
 There is no field for a constructor because, as mentioned earlier, constructors are dropped in this implementation.
 
-The implementations for types and expressions differs slightly. Because there are different types and different expressions for both, first a plain class with no fields is defined: \verb|Type| and \verb|Expressions|. All the different kinds of types inherit from \verb|Type| and all kinds of expressions from \verb|expression|. Thereby simulating the structure of algebraic data types.
+The implementations for types and expressions differ slightly. Because there are different types and different expressions for both, first a plain class with no fields is defined: \verb|Type| and \verb|Expressions|. All the different kinds of types inherit from \verb|Type| and all kinds of expressions from \verb|expression|. Thereby, simulating the structure of algebraic data types.
 As a result it is possible to match against types and expressions.
 
 \begin{minted}[escapeinside=||]{python}
@@ -57,7 +57,7 @@ firstly, the definition of the grammar.
 Because every Featherweight Generic Java program can be represented as an AST, the grammar rules are trivial.
 First, a rule for identifiers is created. This representation allows to easily change what is allowed to be an identifier at any time later.
 Then, for every class defined for the AST a rule is defined recursively.
-Second, for every rule in the grammar a function is defined. These functions get the parsed rule as an argument and return an instantiation of the respective class for the AST.
+Secondly, for every rule in the grammar a function is defined. These functions take the parsed rule as an argument and return an instantiation of the respective class for the AST.
 The most outer rule is \verb|Program| which then returns the whole program represented by the AST, starting with the class \verb|Program|.
 
 \begin{minted}[escapeinside=||]{python}

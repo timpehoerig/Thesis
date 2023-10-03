@@ -1,12 +1,13 @@
 This global type inference algorithm is implemented in Python 3.10.
 
 Python is not a functional language, hence data structures like lists, dictionaries and sets are mutable. That imposes a problem, because mutable data structures are not hashable but entries of sets must be. Having a set of sets is not possible.
-In order to solve this problem all sets, lists and dictionaries are made immutable by using frozen lists, frozen sets and frozen dictionaries. As frozen sets come with the default library they can be used without difficulty. In order to have frozen lists and frozen dictionaries the python libraries \verb|FrozenList| and \verb|frozendict| are used.\\
+In order to solve this problem all sets, lists and dictionaries are made immutable by using frozen lists, frozen sets and frozen dictionaries. As frozen sets come with the default library they can be used without difficulty. In order to have frozen lists and frozen dictionaries the python libraries \verb|FrozenList| and \verb|frozendict| are used.
+
 One important environment that is passed to almost every function, but is never mentioned in the abstract definitions, is the \verb|Class Table|. The class table or short CT is a mapping from class names to their class definitions. This environment is filled at the parsing step and never changes afterwards. The class table environment simplifies the access to any class at any time by their name.\\
 
 \subsection{TypeInference}
 
-The function \verb|TypeInference| connects constraint generation with constraint solving. The implementation of differs from the idea described in the paper.
+The function \verb|TypeInference| connects constraint generation with constraint solving. The implementation differs from the idea described in the paper.
 Classes are processed one after another. Thus, every class has access to the method types inferred for all methods that are defined in earlier classes.
 Firstly, \verb|FJType| is called. The current class and the method type environment containing all the method type assumptions of earlier classes are given as arguments to \verb|FJType|. It returns a method type assumption for every
 method defined in the current class together with a constraint set.
@@ -21,9 +22,10 @@ Together both are passed to \verb|Unify|.
 A solution consists of two parts. Firstly, a mapping from every type variable occurring in the constraints to a type parameter or a non variable type. Secondly, a mapping from every new type parameter introduced by \verb|Unify| to its upper bound.
 For every method type assumption created by \verb|FJType| all type variables are replaced by the type they are mapped to and
 a generic type annotation is added. This generic type annotation maps every type parameter that occurs in the method type assumption to its upper bound.
-Collecting all type parameters that occur in the method type assumption of a method is done by the function \verb|getTypeSigOf| which traverses every type of the method type assumption recursively and keeps a list of all type variables that occur.
+Collecting all type parameters that occur in the method type assumption of a method is done by the function \verb|getTypeSigOf| which traverses every type of the method type assumption recursively and keeps a list of all type parameters that occur.
 
-At this point, the program could be type checked. If this check fails, the algorithm continues with the next possible solution.
+At this point, the program could be type checked\footnote{A type checker is not included in the implementation and could be added.}. If this check fails, the algorithm continues with the next possible solution.
+
 Then, \verb|TypeInference| is recursively called with the new method type assumptions and the next class.
 The next class is found by giving \verb|TypeInference| a new argument \verb|index| that points to the class that is currently checked. This pointer is incremented by one before passing it to the recursive call.
 If the index is bigger than the amount of classes the program has, the algorithm terminates and a solution is found.
@@ -32,8 +34,8 @@ the program must be type checked. This is not done in this implementation.
 If overall no solution is found, the exception \verb|NoSolutionFound| is raised.
 
 \subsection{FJType}
-The implementation of the constraint generation is straight forward. Because every functions is described in pseudo code, most of the functions can easily be translated into python code. \\
-Creating fresh type variables is done by instantiating a generator at the beginning that generates type variables in the form of $x_0$, $x_1$, ... where \verb|X| is a string given as argument to the generator instantiation. \\
+The implementation of the constraint generation is straight forward. Because every function is described in pseudo code, most of the functions can easily be translated into python code. \\
+Creating fresh type variables is performed by instantiating a generator at the beginning that generates type variables in the form of $x_0$, $x_1$, ... where \verb|x| is a string given as argument to the generator instantiation. \\
 
 \subsection{FJUnify}
 
@@ -50,12 +52,12 @@ The function \verb|gen_C_prime| has an optional argument to give or-constraints 
 \subsubsection{Treating type parameters as parameterless classes}
 All rules of step 1 and following would also apply for generic type parameters. So every rule must also be defined for them and every possible combination. In order to avoid this, generic type parameters are treated as parameterless classes with their upper bounds being now their superclasses. One important aspect here is that those new classes are not added to the class table. Instead they are stored in an extra environment. Now, when looking up classes in the class table, an extra check must be done to guaranty that the class is in it. If not, the superclass can be deduced from the new environment.
 The transformation from  generic type parameters to parameterless classes and backwards is done in two extra functions that take and return a constraint set.
-These functions first apply the transformations to both sides of each constraint. In case of a non type variable, the transformations are applied recursively.
+These functions apply the transformations to both sides of each constraint. In case of a non type variable, the transformations are applied recursively.
 
 \subsubsection{Exhaustively applying rules}
-There is no pleasant way in python to do such a thing. The most simple way to do so is to have a while-loop on a condition variable \verb|changed| that is \verb|True| at the beginning but changes to \verb|False| as soon as the while-loop is entered. Then, if one rule applies and changes something, the condition variable is set to \verb|True|.
+There is no pleasant way in python to do such a thing. The most simple way to do so is to have a while-loop on a condition variable \verb|changed| that is \verb|True| at the beginning but changes to \verb|False| as soon as the while-loop is entered. Then, if one rule applies and changes the constraint set, the condition variable is set to \verb|True|.
 Some rules take two constraints as precondition, thus every possible combination of constraints must be tested. This is done by two nested for-loops.
-Applying a rule changes the constraint set and thus imposing a problem. Changing a set while iterating over it is not possible. Thus, the algorithm iterates over a copy of that constraint set. As soon as one rule applies, a constraint may be removed from the constraint set. However, that does not effect the copy. It results in another problem: Constraints that were removed are not allowed to be used again.
+Applying a rule changes the constraint set and thus imposing a problem. Changing a set while iterating over it is not possible. Thus, the algorithm iterates over a copy of that constraint set. As soon as one rule applies, a constraint may be removed from the constraint set. However, that does not effect the copy, resulting in another problem: Constraints that were removed are not allowed to be used again.
 A simple but not efficient way to solve this problem is to restart the for-loop every time a rule applies.
 
 \subsubsection{Rules in Figure \ref{resolve_rules}}
@@ -79,7 +81,7 @@ This hidden ordering is passed to \verb|gen_C_prime| which flattens the or-const
 However, this may be important in the feature to find the most specific solution.
 
 When no such upper bound constraint with a type variable exists, it can still be implied by other constraints of the form \verb|a| < $\nvtt{C}{T}$ and \verb|a| $<^*$ \verb|b|. The type variable can be a subtype or a supertype of $\nvt{C}{T}$. If it is a supertype, it can be handled by creating an or-constraint as before. However, the case of \verb|b| being a subtype of $\nvt{C}{T}$ needs to be considered, too.
-In order to do so the subtype constraint \verb|b| < $\nvtt{C}{T}$ is added to the or-constraint. If such a subtype constraint is added to the or-constraint it is always added as first possible solution.
+In order to do so the subtype constraint \verb|b| < $\nvtt{C}{T}$ is added to the or-constraint. If such a subtype constraint is added to the or-constraint, it is the first in the hidden ordering.
 
 \subsection{Example}
 
@@ -97,7 +99,7 @@ Consider the following Featherweight Generic Java program:
     }
 \end{minted}
 
-This example only contains one class definition, thus \verb|FJType| and \verb|Unify| run exactly once. Still, \verb|Unify| may return more than one solution.
+This example only contains one class definition, in consequence \verb|FJType| and \verb|Unify| run exactly once. Still, \verb|Unify| may return more than one solution.
 Firstly, we look at \verb|FJType| and then at \verb|Unify|.
 \\
 \\
@@ -120,7 +122,7 @@ Nextly, for every method defined in \verb|Pair| the function \verb|TYPEMethod| w
 In this case the method \verb|setfst| is only called once. \verb|TYPEMethod| creates the local variable type environment where \verb|this| has type \verb|Pair<X, Y>| (\verb|this| always refers to the class it is in, which in this case is \verb|Pair|) and \verb|newfst| has type $a_1$.
 
 Then, the body of \verb|setfst| is processed. The body of a method is always one expression. Here it is an object creation of \verb|Pair|.
-At first, we get the types of the fields of \verb|Pair<X, Y>| while substituting \verb|X| and \verb|Y| by some fresh type variables $a_5$ and $a_6$. Both of them need to be subtypes of \verb|Object| and thus we add two subtyping constraints. Because all fields are defined in the current class, this result in the types $a_5$ and $a_6$. Now, we process the arguments of \verb|new Pair(newfst, this.snd)|.
+At first, we get the types of the fields of \verb|Pair<X, Y>| while substituting \verb|X| and \verb|Y| by some fresh type variables $a_5$ and $a_6$. Both type variables need to be subtypes of \verb|Object| and thus we add two subtyping constraints. Because all fields are defined in the current class, the field types are $a_5$ and $a_6$. Now, we process the arguments of \verb|new Pair(newfst, this.snd)|.
 The first argument is \verb|newfst| which is a variable. We know that \verb|newfst| must be a subtype of $a_5$, if we lookup the type of the variable \verb|newfst| in the variable type environment. We obtain that \verb|newfst| has type $a_1$. Thus, the constraint $a_1$ < $a_5$ is generated.
 The second argument is \verb|this.snd| which is a field lookup. We again know \verb|this.snd| must be a subtype of $a_6$. A fresh type variable $a_2$ is introduced to represent the type of \verb|this.snd|, thus we obtain the constraint $a_2$ < $a_6$.
 The type variable $a_2$ represents \verb|this.snd| which can be further constrained. We know \verb|this| is a variable of type \verb|Pair<X, Y>|.
@@ -151,7 +153,7 @@ Resulting in the full method type environment and constraint set:
 Now, we have all constraints and method types that we need and can start to solve them.
 
 \subsubsection{Unify}
-The first thing that \verb|Unify| does is to resolve the or-constraints. Here, we have only one case in the or-constraint, thus we can just add all constraints together to one simple constraint set.
+The first step that \verb|Unify| performs is to resolve the or-constraints. Here, we have only one case in the or-constraint, thus we can just add all constraints together to one simple constraint set.
 Before we go on we need to transform all type parameters to parameterless classes ($\text{X} \to \nvtt{X}{}$).
 Then, we continue with step 1. The only rule that applies to any constraint is \verb|adapt|.
 
@@ -165,17 +167,17 @@ Now, we can resolve this further with \verb|reduce|:
     \frac{\cand \{ \nvtt{Pair}{\nvtt{X}{}, \nvtt{Y}{}} = \nvtt{Pair}{\fa{3}, \fa{4}} \} }{\cand \{ \nvtt{X}{} = \fa{3}, \ \nvtt{Y}{} = \fa{4} \} } \quad \text{reduce}
 \end{align*}
 
-Then, the two resolved rules are \verb|swap|ped such that the type variables \verb|a| occur on the left hand side.
+Then, the two resolved rules are \verb|swap|ped such that the type variables \verb|a|$_i$ occur on the left hand side.
 
 \begin{align*}
     \frac{\cand \{ \nvtt{X}{} = \fa{3} \} }{\cand \{ \fa{3} = \nvtt{X}{} \} } \quad \text{and} \quad \frac{\cand \{ \nvtt{Y}{} = \fa{3} \} }{\cand \{ \fa{3} = \nvtt{Y}{} \} } \quad \text{swap}
 \end{align*}
 
-No other rules apply now anymore and we continue with step 2.\\
+No other rules apply anymore and we continue with step 2.\\
 
-We find the constraint $\nvtt{Pair}{\fa{5}, \ \fa{6}} < \fa{0}$ which has a type variable as upper bound and thus requires us to resolve it with \verb|expandLB|. We search the upper bound constraint for $a_0$ which is $\fa{0} < \nvtt{Object}{}$.
+We encounter the constraint $\nvtt{Pair}{\fa{5}, \ \fa{6}} < \fa{0}$ which has a type variable as upper bound and thus requires us to resolve it with \verb|expandLB|. We search the upper bound constraint for $a_0$ which is $\fa{0} < \nvtt{Object}{}$.
 Next, we check if $\nvtt{Pair}{\fa{5}, \ \fa{6}}$ can be a subtype of \verb|Object| which is trivially satisfied and thus we know $a_0$ is either $\nvtt{Pair}{\fa{5}, \ \fa{6}}$ or \verb|Object|. We add those two constraints as an or-constraint
-to the constraint set, but now we have again or-constraints and thus have to flatten the constraint set once again. However, this time the or-constraint has two possible constraint sets resulting overall in two different simple constraint sets which we both have to consider one after the other.
+to the constraint set, but now we have again or-constraints and thus have to flatten the constraint set once again. However, this time the or-constraint contains two different constraint sets resulting overall in two different simple constraint sets which we both have to consider one after the other.
 It is important to look at the constraint set that is more specific first. We continue with step 3 and the first simple constraint set. We can substitute in three different cases: $\fa{2}$ = $\fa{4}$, $\fa{3}$ = $\nvtt{X}{}$ and $\fa{4}$ = $\nvtt{Y}{}$.
 These substitutions change our constraint set and we start again from step 1 with the following constraint set:
 
@@ -191,7 +193,7 @@ Once again we find a constraint that has a type variable as upper bound. This ti
 Resolving this with \verb|expandLB| gives us again two constraint sets: one with $\fa{6}$ = $\nvtt{Y}{}$ and one with $\fa{6}$ = $\nvtt{Object}{}$. We consider the more specific one first and continue with step 3.
 We substitute $\nvtt{Y}{}$ for $\fa{6}$. This changes our constraint set and we start again from step 1. This time no rule of step 1 to 4 applies and we can jump right to step 5.
 Here, we find the constraint $\fa{1}$ < $\fa{5}$. We can substitute $\fa{1}$ for $\fa{5}$ and add the constraint that they need to be equal.
-No further rule applies and we can go to step 6. Before we start with step 6 we need to transform the type parameters from parameterless classes back to normal type parameters ($\nvtt{X}{} \to \text{X}$). Now, we can start with step 6. We first divide the constraint set into subtype and equal constraints resulting in the following:
+No further rule applies and we can go to step 6. Before we start with step 6 we need to transform the type parameters from parameterless classes back to normal type parameters ($\nvtt{X}{} \to \text{X}$). Now, we can start with step 6. We first divide the constraint set into subtype and equal constraint sets resulting in the following:
 
 \begin{align*}
     \text{C}_= &= \{ \fa{0} = \nvtt{Pair}{\fa{1}, \ \text{Y}}, \ \fa{6} = \text{Y}, \ \fa{5} = \fa{1}, \ \fa{4} = \text{Y}, \ \fa{3} = \text{X}, \ \fa{2} = \text{Y} \}\\
@@ -245,14 +247,14 @@ A more advanced example is shown in Figure \ref{example2}.
     \label{example2}
 \end{figure}
 
-We process one class after another: The first class does not bring any new features that we have not seen in the first example. The inferred method type of \verb|id| is $<\xa{Z}{0} \vartriangleleft \nvtt{Object}{}>[\xa{Z}{0}] \to \xa{Z}{0}$.
+We process one class after another: The first class does not bring any new features that we have not already seen in the first example. The inferred method type of \verb|id| is $<\xa{Z}{0} \vartriangleleft \nvtt{Object}{}>[\xa{Z}{0}] \to \xa{Z}{0}$.
 With this information the next class \verb|SomeMethods| is processed. While processing the body of \verb|idd| we encounter a method call of \verb|id|. Thus, every method with that name in the method type environment is considered. The method type environment
-contains only one method signature: the one for \verb|id| of class \verb|Int|. Thus, we know two things: Firstly, \verb|X| has to be of type \verb|Int|, because \verb|Int| is the only class that defines the method \verb|id|. Secondly, the type signature of \verb|id| states that the argument and the return type must be the same.
-That provides all the information we need. The type parameter \verb|X| has to be a subtype of \verb|Int|. The method call \verb|x.id(x)| has the same type as \verb|X|, thus the method type of \verb|idd| is $<\xa{Z}{1} \vartriangleleft \nvtt{Int}{}>[\xa{Z}{1}] \to \xa{Z}{1}$.
+contains only one method signature: the one for \verb|id| of class \verb|Int|. Thus, we know two things: Firstly, \verb|x| has to be of type \verb|Int|, because \verb|Int| is the only class that defines the method \verb|id|. Secondly, the type signature of \verb|id| states that the argument and the return type must be the same.
+That provides all the information we need. The type parameter \verb|Z|$_1$ has to be a subtype of \verb|Int|. The method call \verb|x.id(x)| has the same type as \verb|x|, thus the method type of \verb|idd| is $<\xa{Z}{1} \vartriangleleft \nvtt{Int}{}>[\xa{Z}{1}] \to \xa{Z}{1}$.
 Next, we process the class \verb|Pair|. The first method \verb|setfst| is the same as in the previous example and thus has the same type. The only difference is that the generic type parameters of \verb|Pair| are bound by \verb|Int| rather than \verb|Object|.
 This changes the upper bound in the method type. Hence, the method type of \verb|setfst| is $<\xa{Z}{2} \vartriangleleft \nvtt{Int}{}>[\xa{Z}{2}] \to \nvtt{Pair}{\xa{Z}{2}, \ \text{Y}}$.
 The last method \verb|setboth| contains every possible expression there is: variables, a field lookup, method calls, object creation and a cast.
-The overall return type is \verb|Pair|. The first argument of \verb|Pair| is a field lookup, thus its type depends on the object it is looked up on. This is a method call of \verb|setfst| for which we know the type already. Thus, we know the argument \verb|newfst| of the method call \verb|setfst| must be a subtype of \verb|Int|. The return type of \verb|setfst| is a \verb|Pair| where the first field has the same type as the argument \verb|newfst| and the second field has type \verb|Y|.
+The overall return type is \verb|Pair|. The first argument of \verb|Pair| is a field lookup, thus its type depends on the object it is looked up on. The object it is looked up on is a method call of \verb|setfst| for which we know the type already. Thus, we know the argument \verb|newfst| of the method call \verb|setfst| must be a subtype of \verb|Int|. The return type of \verb|setfst| is a \verb|Pair| where the first field has the same type as the argument \verb|newfst| and the second field has type \verb|Y|.
 Thus, a field lookup \verb|fst| on that \verb|Pair| has the same type as \verb|newfst|. Likewise, the type of the second argument can be inferred. However, the most outer expression of the second field is a cast to \verb|Int|, thus the type must be \verb|Int|.
-The expression that is casted may introduce constraints that lead to conflicts, thus it is important to check the expression that is casted and not just stop there. In this case all constraints that are introduce by this expression can be solved.
+The expression that is casted may introduce constraints that lead to conflicts, thus it is important to check the expression that is casted and not just stop there. In this case all constraints that are introduce by the expression can be solved.
 All this information leads to the following method type: $<\xa{Z}{3} \vartriangleleft \nvtt{Int}{}, \ \xa{Z}{4} \vartriangleleft \nvtt{Int}{}>[\xa{Z}{3}, \ \xa{Z}{4}] \to \nvtt{Pair}{\xa{Z}{3}, \ \nvtt{Int}{}}$.
