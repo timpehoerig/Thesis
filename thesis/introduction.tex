@@ -81,7 +81,7 @@ Rewriting the previous example results in:
     |\green{Y} snd|;
 
     <|\green{Z} \pink{extends} \green{Object}|<>> |\green{Pair}|<|\green{Z}|, |\green{Y}|> |setfst|(|\green{Z} newfst|) {
-      |\pink{return new} \green{Pair}|(newfst, |this.snd|);
+      |\pink{return new} \green{Pair}|<|\green{Z}|, |\green{Y}|>(newfst, |this.snd|);
     }
   }
 

@@ -35,7 +35,7 @@ If overall no solution is found, the exception \verb|NoSolutionFound| is raised.
 
 \subsection{FJType}
 The implementation of the constraint generation is straight forward. Because every function is described in pseudo code, most of the functions can easily be translated into python code. \\
-Creating fresh type variables is performed by instantiating a generator at the beginning that generates type variables in the form of $x_0$, $x_1$, ... where \verb|x| is a string given as argument to the generator instantiation. \\
+Creating fresh type variables is performed by instantiating a generator at the beginning that generates type variables in the form of $x_0$, $x_1$, ... where \verb|x| is a string\footnote{This string is not allowed to end with a number. Otherwise x and x1 can both generate x11.} given as argument to the generator instantiation. \\
 
 \subsection{FJUnify}
 
@@ -118,7 +118,7 @@ Because there are no other definitions of the method \verb|setfst| in any superc
     \text{C} &= \{ \text{a}_0 < \text{Object}, \ \text{a}_1 < \text{Object} \}\\
 \end{align*}
 
-Nextly, for every method defined in \verb|Pair| the function \verb|TYPEMethod| with the new type environment is called.
+Next, for every method defined in \verb|Pair| the function \verb|TYPEMethod| with the new type environment is called.
 In this case the method \verb|setfst| is only called once. \verb|TYPEMethod| creates the local variable type environment where \verb|this| has type \verb|Pair<X, Y>| (\verb|this| always refers to the class it is in, which in this case is \verb|Pair|) and \verb|newfst| has type $a_1$.
 
 Then, the body of \verb|setfst| is processed. The body of a method is always one expression. Here it is an object creation of \verb|Pair|.
