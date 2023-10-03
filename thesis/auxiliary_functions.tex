@@ -18,9 +18,9 @@ The second rule (2) is short for $[\text{T}_1/\text{X}_1, \ ... \ , \ \text{T}_n
 \\
 The third rule (3) is short for $[\text{T}_1/\text{X}_1, \ ... \ , \ \text{T}_n/\text{X}_n]\text{N}_1, \ ... \ , \ [\text{T}_1/\text{X}_1, \ ... \ , \ \text{T}_n/\text{X}_n]\text{N}_n$.
 \\
-These rules are implemented in different functions using case splitting on the different types in \inl{N}.
+These rules are implemented in different functions by case splitting on the different types in \verb|N|.
 
-\subsection{Substitution on constraints}
+\subsection{Substitution on Constraints}
 
 \begin{align*}
     1:& \quad \txn{T}{a}{C}\\
@@ -49,7 +49,7 @@ Substitution is also possible on constraint sets. Type variables can be replaced
     \label{subtyping}
 \end{figure}
 
-Figure \ref{subtyping} shows the subtyping rules. By definition, a type is always a subtype of itself. Subtyping is also transitive and the environment delta $\Delta$ maps every type parameter to its upper bound. Thus, a type parameter is always a subtype of its upper bound.
+Figure \ref{subtyping} shows the subtyping rules. By definition, a type is always a subtype of itself and subtyping is transitive. The environment $\Delta$ maps every type parameter to its upper bound. Moreover, a type parameter is always a subtype of its upper bound.
 A class is always a subclass of its superclass. However, a generic class is only a subtype of its superclass, if the concrete types that replace the type parameters of the class also replace these type parameters in the superclass.
 
 \subsection{Field Lookup}
@@ -60,8 +60,8 @@ A class is always a subclass of its superclass. However, a generic class is only
     &\frac{\class{S}{f} \quad \text{fields}(\tsxsn{T}{X}{N}) = \ot{U} \ \ot{g} }{\text{fields}(\nvt{C}{T}) = \ot{U} \ \ot{g}, \ \tsxsns{T}{X}{S} \ \ot{f}}\\
 \end{align*}
 
-A field lookup on a class \inl{C} returns every field of \inl{C} with its type, including all fields of all superclasses of \inl{C} with their types. \inl{Object} itself has no fields thus, \inl{fields(Object)} returns the empty dictionary.
-The type parameters need a special treatment here. The field types of a class \inl{C} may include type parameters. These must be substituted with the types the class is instantiated with. This also needs to be done for the superclass of \inl{C} before the recursive call of \inl{fields}.
+A field lookup on a class \verb|C| returns every field of \verb|C| with its type, including all fields of all superclasses of \verb|C| along their types. \verb|Object| itself has no fields and thus, \verb|fields(Object)| returns the empty dictionary.
+The type parameters need a special treatment here. The field types of a class \verb|C| may include type parameters. These must be substituted with the types the class is instantiated with. This also needs to be done for the superclass of \verb|C| before the recursive call of \verb|fields|.
 
 \subsection{Method Type Lookup}
 
@@ -77,8 +77,8 @@ The type parameters need a special treatment here. The field types of a class \i
     \frac{\class{X}{N} \quad \text{m} \notin \ot{M}}{\mtypeC{\tsxsn{T}{X}{N}}}
 \end{align*}
 
-In Featherweight Generic Java methods of superclasses are inherited. Hence, method type lookups on classes with or without the method defined can be possible. If the method is defined in the class, the method type signature can be read off the method type environment. Once again, generic type parameters may occur in that type signature and must be substituted.
-If the method is not defined in the class \inl{C}, then \inl{mtype} is called on the superclass of \inl{C} where the generic type parameters are substituted by the types the class \inl{C} is instantiated with.
+In Featherweight Generic Java methods of superclasses are inherited. Hence, method type lookups on classes with or without the method defined can be possible. If the method is defined in the class, the method type signature can be inferred from the method type environment. Once again, generic type parameters may occur in that type signature and must be substituted.
+If the method is not defined in the class \verb|C|, then \verb|mtype| is called on the superclass of \verb|C| where the generic type parameters are substituted by the types the class \verb|C| is instantiated with.
 
 \subsection{Generic Supertype}
 
@@ -88,5 +88,5 @@ If the method is not defined in the class \inl{C}, then \inl{mtype} is called on
     &\frac{ \text{class} \ \text{C} \yp \vartriangleleft \nvt{C'}{M} \ \{ ... \} }{ \text{genericSupertype} ( \text{C}, \ot{T}, \text{D} ) = \text{genericSupertype} ( \text{C'}, \tsxsns{T}{Y}{M}, \text{D} ) }\\
 \end{align*}
 
-\inl{genericSupertype} takes two subtype related classes C and D and a list of types $\ot{T}$ as arguments. If the two classes are the same, the list of types $\ot{T}$ is returned. Otherwise, the function is recursively called with the superclass C' of C.
-However, the superclass C' may have different generic type parameters as C. That is why $\ot{T}$ is replaced by $\ot{M}$. $\ot{M}$ are the generic type parameters of C'. The generic type parameters $\ot{Y}$ may occur in $\ot{M}$. Thus, $\ot{T}$ is substituted for $\ot{Y}$ in $\ot{M}$.
+\verb|genericSupertype| takes two subtype related classes C and D and a list of types $\ot{T}$ as arguments. If the two classes are the same, the list of types $\ot{T}$ is returned. Otherwise, the function is recursively called with the superclass C' of C.
+However, the instantiation of the type parameters of the superclass C' in the class definition of C can be different than the generic type parameters $\ot{T}$. Thus, $\ot{M}$ is taken as the second argument instead of $\ot{T}$. Now, the type parameters $\ot{Y}$ may occur in $\ot{M}$. However, $\ot{T}$ are exactly the instantiated types for $\ot{Y}$. Thus, $\ot{T}$ is substituted for $\ot{Y}$ in $\ot{M}$.

@@ -21,11 +21,11 @@ In the following it is assumed that a program always fulfills this condition.
     \label{constraint_syntax}
 \end{figure}
 
-In Figure \ref{constraint_syntax} the syntax for constraints is defined. New type variables \inl{a} are introduced. There are only two forms of simple constraints: equal and subtype constraints. An or-constraint represents different possibilities. Only one of the simple constraint sets in an or-constraint must be satisfied.
+In Figure \ref{constraint_syntax} the syntax for constraints is defined. New type variables \verb|a| are introduced. There are only two forms of simple constraints: equal and subtype constraints. An or-constraint represents different possibilities. Only one of the simple constraint sets in an or-constraint must be satisfied.
 A constraint can either be a simple constraint or an or-constraint. A method type assumption $\lambda$ maps a method name and the class it is defined in to a method type signature. A parameter assumption $\eta$ maps parameters to types.
 
-The algorithm mainly consists of two parts: constraint generation and constraint solving.
-As solving the constraints can lead to multiple solutions for a single class, simply one solution is assumed. If the algorithm later fails, it backtracks and assumes the next solution.
+The algorithm mainly consists of two parts: constraint generation \verb|FJType| and constraint solving \verb|Unify|.
+When solving the constraints leads to multiple solutions for a single class, simply one solution is assumed. If the algorithm later fails, it backtracks and assumes the next solution.
 
 \begin{align*}
     \text{FJType}&\text{Inference}(\sprod{0.7}, \ \classheader \{ ... \}) = \\

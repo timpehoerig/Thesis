@@ -1,9 +1,9 @@
 \subsection{Abstract Syntax Tree}
 
 Having a program in plain text form is rather useless for running the type inference algorithm. Instead, having the program in a specific form where class definitions can be accessed and traversed is desirable.
-Such a form is called an Abstract Syntax Tree short AST. Every node of this AST is represented by a dataclass in Python \footnote{FGJ\_AST.py}.
+Such a form is called an Abstract Syntax Tree short AST. Every node in this AST is represented by a dataclass in Python \footnote{FGJ\_AST.py}.
 
-The entry point for every full program is the class \inl{Program}.
+The entry point for full program is the class \verb|Program|.
 \begin{minted}[escapeinside=||]{python}
     [...]
 
@@ -16,11 +16,11 @@ The entry point for every full program is the class \inl{Program}.
         expression: Expression
 \end{minted}
 
-The class \inl{Program} has two fields: \inl{CT} and \inl{expression}. \inl{CT} short for Class Table is a mapping from every class name to its definition. \inl{expression} is an expression to be evaluated.
+The class \verb|Program| has two fields: \verb|CT| and \verb|expression|. \verb|CT|, short for class table, is a mapping from every class name to its definition. \verb|expression| is an expression to be evaluated.
 
 The implementation of types, class definitions, method definitions and expressions are straight forward adaptations of their formal definitions in the paper.
 
-Here, an example for the class definition \inl{ClassDef}:
+Here, an example for the class definition \verb|ClassDef|:
 \begin{minted}[escapeinside=||]{python}
     @dataclass
     class ClassDef:
@@ -30,9 +30,9 @@ Here, an example for the class definition \inl{ClassDef}:
         methods: list[MethodDef]
 \end{minted}
 
-There is no field for a constructor, because as mentioned earlier constructors are dropped in this implementation.
+There is no field for a constructor because, as mentioned earlier, constructors are dropped in this implementation.
 
-The implementations for types and expressions differs slightly. Because there are different types and different expressions for both, first a plain class with no fields is defined: \inl{Type} and \inl{Expressions}. All the different kinds of types inherit from \inl{Type} and all kinds of expressions from \inl{Expression}.
+The implementations for types and expressions differs slightly. Because there are different types and different expressions for both, first a plain class with no fields is defined: \verb|Type| and \verb|Expressions|. All the different kinds of types inherit from \verb|Type| and all kinds of expressions from \verb|expression|. Thereby simulating the structure of algebraic data types.
 As a result it is possible to match against types and expressions.
 
 \begin{minted}[escapeinside=||]{python}
@@ -49,16 +49,16 @@ Every Featherweight Generic Java program can be represented by an AST.
 
 \subsection{Parsing}
 
-Parsing the program code to an AST is done by using the python parser library \href{https://lark-parser.readthedocs.io/en/stable/}{Lark}.
+Parsing the program code to an AST is performed by using the python parser library \href{https://lark-parser.readthedocs.io/en/stable/}{Lark}.
 Lark is a powerful library that can parse any context-free grammar.
 
 There are two parts when using Lark:
 firstly, the definition of the grammar.
-Because every Featherweight Generic Java program can now be represented as an AST, the grammar rules are trivial.
+Because every Featherweight Generic Java program can be represented as an AST, the grammar rules are trivial.
 First, a rule for identifiers is created. This representation allows to easily change what is allowed to be an identifier at any time later.
 Then, for every class defined for the AST a rule is defined recursively.
 Second, for every rule in the grammar a function is defined. These functions get the parsed rule as an argument and return an instantiation of the respective class for the AST.
-The most outer rule is \inl{program} which then returns the whole program represented by the AST starting with the class \inl{Program}.
+The most outer rule is \verb|Program| which then returns the whole program represented by the AST, starting with the class \verb|Program|.
 
 \begin{minted}[escapeinside=||]{python}
     # grammar rules
