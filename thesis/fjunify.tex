@@ -15,11 +15,11 @@ A solution is found, if the constraint set can be transformed into solved form. 
 
 \verb|Unify| takes two arguments: First, the constraint set to solve. Second, a mapping from type parameters \verb|X| to their upper bound \verb|N|. This mapping represents the type parameters and their upper bounds of the current class that the overall algorithm is currently checking.
 In order to circumvent a special treatment for these type parameters, all type parameters $X_i$ are treated as parameterless classes $X_i$<> with superclass $N_i$.
-The constraint set \verb|C| given to \verb|Unify| may contain multiple or-constraints. Flattening them to constraint sets \verb|C|' that only contain simple constraints leads to multiple \verb|C|' that together cover all possible combinations of constraints.
-The following steps are done for the first \verb|C|'. If this leads to a solution, \verb|TypeInference| continues with the next class. Otherwise, the next \verb|C|' is tried.
+The constraint set $C$ given to \verb|Unify| may contain multiple or-constraints. Flattening them to constraint sets $C$' that only contain simple constraints leads to multiple $C$' that together cover all possible combinations of constraints.
+The following steps are done for the first $C$'. If this leads to a solution, \verb|TypeInference| continues with the next class. Otherwise, the next $C$' is tried.
 
 \subsubsection{Step 1}
-The rules defined in Figure \ref{resolve_rules} are applied exhaustively to \verb|C|'.
+The rules defined in Figure \ref{resolve_rules} are applied exhaustively to $C$'.
 
 \begin{figure}[tp]
     \begin{align*}
@@ -51,8 +51,8 @@ This decreases the amount of or-constraints generated.
 
 \subsubsection{Step 2}
 Check if one of the following cases applies. If not, the constraint set is in solved form:\\
-1. $\{ \nvt{C}{T} < \nvt{D}{U} \}$ where \verb|C| cannot be a subtype of \verb|D|. As a result \verb|C|' has no solution.\\
-2. $\{ a < \nvt{C}{T}, \ a < \nvt{D}{U} \}$ where \verb|C| cannot be a subtype of \verb|D| and vice versa. Again, \verb|C|' has no solution.\\
+1. $\{ \nvt{C}{T} < \nvt{D}{U} \}$ where \verb|C| cannot be a subtype of \verb|D|. As a result $C$' has no solution.\\
+2. $\{ a < \nvt{C}{T}, \ a < \nvt{D}{U} \}$ where \verb|C| cannot be a subtype of \verb|D| and vice versa. Again, $C$' has no solution.\\
 3. $\{ \nvt{C}{T} < a \}$\\
 \\
 In the last case the non variable type $\nvt{C}{T}$ has an upper bound. This upper bound is a type variable \verb|a| which is not allowed in Featherweight Generic Java.
@@ -69,37 +69,37 @@ The or-constraint is generated as follows:
 Such an upper bound constraint can also be implied by two or multiple other constraints of the form \verb|a| < $\nvt{C}{T}$ and \verb|a| $<^*$ \verb|b|. \verb|b| can either be a subtype of $\nvt{C}{T}$ or it can be an upper bound of $\nvt{C}{T}$. In the first case everything is fine.
 The latter case implies the constraint $\nvt{C}{T}$ < \verb|b|. This constraint can be handled the same way as a direct upper bound constraint. Only the case of \verb|b| being a subtype of $\nvt{C}{T}$ needs to be taken into account. Thus, the constraint \verb|b| < $\nvt{C}{T}$ is included as an additional case in the or-constraint.
 
-Now, \verb|C|' again may contain or-constraints. The constraint set \verb|C|' is flattened once again and the following steps are done for each simple constraint set \verb|C|''.
+Now, $C$' again may contain or-constraints. The constraint set $C$' is flattened once again and the following steps are done for each simple constraint set $C$''.
 
 \subsubsection{Step 3}
-The rule \verb|subst| is applied exhaustively to C''.
+The rule \verb|subst| is applied exhaustively to $C$''.
 
 \begin{align*}
     \frac{C \cup \{ \text{a} = \text{T} \}}{ \txn{T}{a}{C} \cup \{ \text{a} = \text{T} \} } \quad \text{where a occurs in C but not in T}
 \end{align*}
 
 \subsubsection{Step 4}
-If the constraint set C'' has changed after applying the rule \verb|subst|, the algorithm starts over with C'' from step 1.
+If the constraint set $C$'' has changed after applying the rule \verb|subst|, the algorithm starts over with $C$'' from step 1.
 
 \subsubsection{Step 5}
-Now, the constraint set C'' is in solved form. Constraints of the first form \verb|a| < \verb|b| do not carry any information with them. Thus, these constraints can be eliminated.
+Now, the constraint set $C$'' is in solved form. Constraints of the first form \verb|a| < \verb|b| do not carry any information with them. Thus, these constraints can be eliminated.
 This is done by exhaustively applying the rules subtype elimination and erase.
 
 \begin{align*}
-    \frac{\text{C} \cup \{ \text{C} \cup \text{a} < \text{b} \}}{ \txn{a}{b}{C} \cup \{ \text{b} = \text{a} \} } \quad &\text{sub elim}
+    \frac{\cand \{ \text{C} \cup \text{a} < \text{b} \}}{ \txn{a}{b}{C} \cup \{ \text{b} = \text{a} \} } \quad &\text{sub elim}
     \\
     \\
-    \frac{\text{C} \cup \{ \text{a} = \text{a} \} }{ \text{C} } \quad &\text{erase}
+    \frac{\cand \{ \text{a} = \text{a} \} }{ C } \quad &\text{erase}
 \end{align*}
 
 \subsubsection{Step 6}
-The constraint set C is divided into $\text{C}_<$ and $\text{C}_=$. $\text{C}_<$ contains all subtype constraints and $\text{C}_=$ all equal constraints.
-Then, new generic type parameters $\ot{Y}$ are generated: one for each constraint in $\text{C}_<$. Now, the substitution $\sigma$ and the mapping from $\ot{Y}$ to their upper bound can be deduced as follows:
+The constraint set $C$ is divided into $C_<$ and $C_=$. $C_<$ contains all subtype constraints and $C_=$ all equal constraints.
+Then, new generic type parameters $\ot{Y}$ are generated: one for each constraint in $C_<$. Now, the substitution $\sigma$ and the mapping from $\ot{Y}$ to their upper bound can be deduced as follows:
 
 \begin{align*}
-    \sigma &= \{ \text{b} \to \tsxsn{Y}{a}{T} \ | \ (\text{b} = \text{T}) \in \text{C}_= \} \cup \{ \ot{a} \to \ot{Y} \} \cup \{ \text{b} \to \text{X} \ | \ (\text{b} < \text{X}) \in \text{C}_< \}\\
+    \sigma &= \{ \text{b} \to \tsxsn{Y}{a}{T} \ | \ (\text{b} = \text{T}) \in C_= \} \cup \{ \ot{a} \to \ot{Y} \} \cup \{ \text{b} \to \text{X} \ | \ (\text{b} < \text{X}) \in C_< \}\\
     \\
-    \gamma &= \{ \text{Y} \vartriangleleft \tsxsn{Y}{a}{N} \ | \ (\text{a} < \text{N}) \in \text{C}_< \}\\
+    \gamma &= \{ \text{Y} \vartriangleleft \tsxsn{Y}{a}{N} \ | \ (\text{a} < \text{N}) \in C_< \}\\
 \end{align*}
 
 The pair of $\sigma$ and $\gamma$ is returned.

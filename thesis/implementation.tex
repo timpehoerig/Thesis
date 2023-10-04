@@ -44,8 +44,8 @@ If all solutions of a class fail, the algorithm backtracks to the class processe
 To do this the whole function \verb|Unify| is implemented as a generator, yielding one solution after another.
 
 \subsubsection{Resolving or-constraints}
-Converting a constraint set \verb|C| which contains simple constraints as well as or-constraints equals a Cartesian product with n sets, where n is the number of or-constraints in \verb|C|.
-Firstly, the constraint set \verb|C| is divided in two parts. One that contains all simple constraints and one that contains all or-constraints.
+Converting a constraint set $C$ which contains simple constraints as well as or-constraints equals a Cartesian product with n sets, where n is the number of or-constraints in $C$.
+Firstly, the constraint set $C$ is divided in two parts. One that contains all simple constraints and one that contains all or-constraints.
 Then, the Cartesian product of all or-constraint is calculated. To each result all simple constraints are added. This is exponential in the number of or-constraint sets, thus this is implemented as a generator \verb|gen_C_prime| that yields one solution after another.
 The function \verb|gen_C_prime| has an optional argument to give or-constraints an ordering. If such an ordering is provided, the constraints inside the or-constraints are considered in that ordering.
 
@@ -83,6 +83,7 @@ However, this may be important in the feature to find the most specific solution
 When no such upper bound constraint with a type variable exists, it can still be implied by other constraints of the form \verb|a| < $\nvtt{C}{T}$ and \verb|a| $<^*$ \verb|b|. The type variable can be a subtype or a supertype of $\nvt{C}{T}$. If it is a supertype, it can be handled by creating an or-constraint as before. However, the case of \verb|b| being a subtype of $\nvt{C}{T}$ needs to be considered, too.
 In order to do so the subtype constraint \verb|b| < $\nvtt{C}{T}$ is added to the or-constraint. If such a subtype constraint is added to the or-constraint, it is the first in the hidden ordering.
 
+\newpage
 \subsection{Example}
 
 Consider the following Featherweight Generic Java program:

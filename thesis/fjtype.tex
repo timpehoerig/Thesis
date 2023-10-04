@@ -1,5 +1,5 @@
 Figure \ref{fjtype} defines the function \verb|FJType|. This function generates constraints for a class. It takes the definition of that class and the method type environment, where all method signatures that have already been inferred from earlier classes are present.
-The function returns a tuple consisting of a set of method signatures $\lambda$ with new type variables and a constraint set C which constrains those type variables.
+The function returns a tuple consisting of a set of method signatures $\lambda$ with new type variables and a constraint set $C$ which constrains those type variables.
 
 \begin{figure}[tp]
     \begin{align*}
@@ -30,8 +30,8 @@ The method type environment and the generated constraints together with the cons
 \begin{align*}
     \text{TYPEMethod}&(\sprod{0.7}, \ \text{C<} \ot{X} \text{>}, \ \text{m} ( \ot{x} ) \{ \ \text{return e}; \} ) = \\
     \text{let} \ &\yp \oto{\text{T}} = \sprod{0.7} ( \cm ) \\
-    & ( \text{R}, \text{C} ) = \text{TYPEExpr} (( \sprod{0.7}; \{ \text{this} : \text{C<} \ot{X} \text{>} \} \cup \{ \ot{x} : \ot{T} \} ) , \text{e} ) \\
-    \text{in} \ \  & \text{C} \cup \{ \text{R} < \text{T} \}\\
+    & ( \text{R}, C ) = \text{TYPEExpr} (( \sprod{0.7}; \{ \text{this} : \text{C<} \ot{X} \text{>} \} \cup \{ \ot{x} : \ot{T} \} ) , \text{e} ) \\
+    \text{in} \ \  & C \cup \{ \text{R} < \text{T} \}\\
 \end{align*}
 
 \verb|TYPEMethod| takes the method type environment, the class header $\nvt{C}{X}$ of the class that is currently checked and the method definitions as arguments.
@@ -58,7 +58,7 @@ If the expression is a variable its type is looked up in the variable type envir
     &\fresh{a} \\
     &\text{c} = \text{oc} \{ \{ \text{R} < \text{C<} \ot{a} \text{>}, \text{a} = \tsxsn{a}{X}{T}, \ot{a} < \tsxsns{a}{X}{N} \ | \ \fresh{\ot{a}} \} \\
     & \quad \quad \quad \quad | \ \text{T f} \in \class{X}{N} \}\\
-    \text{in} \ \ & (\text{a}, (\text{C}_R \cup \{ \text{c} \} ))
+    \text{in} \ \ & (\text{a}, (C_R \cup \{ \text{c} \} ))
 \end{align*}
 
 In case of a field lookup \verb|e.f| first the \verb|TYPEExpr| function is called recursively on the expression \verb|e|, returning a
@@ -78,7 +78,7 @@ to be equal to the type of the corresponding field in \verb|C|. And finally, one
     &\text{c} = \text{oc} \{ \{ \text{R} < \text{C<} \ot{a} \text{>}, \text{a} = \tsxsnd{b}{Y}{a}{X}{T}, \ot{R} < \tsxsnsd{b}{Y}{a}{X}{T}, \\
     & \quad \quad \quad \quad \ot{b} < \tsxsnsd{b}{Y}{a}{X}{P}, \ot{a} < \tsxsns{a}{X}{N} \ | \ \ot{a}, \fresh{b} \} \\
     & \quad \quad \quad \quad | \ ( \cm : \yp \oto{T} ) \in \sprod{0.7} \}\\
-    \text{in} \ \ & (\text{a}, (\text{C}_R \cup \bigcup_{i} \text{C}_i \cup \{ \text{c} \} ))
+    \text{in} \ \ & (\text{a}, (C_R \cup \bigcup_{i} C_i \cup \{ \text{c} \} ))
 \end{align*}
 
 A method invocation imposes the same problem that a field lookup did and thus is solved in a similar way. But first, for the
@@ -94,12 +94,12 @@ of the method signature to be a subtype of the corresponding bounding types. All
 
 \begin{align*}
     \texpr{\text{new} \ \text{C}(\ot{e})} &=\\
-    \text{let} \ & \forall{e_i} \in \ot{e} : (\text{R}_i, \text{C}_i) = \texpr{\text{e}_i}\\
+    \text{let} \ & \forall{e_i} \in \ot{e} : (\text{R}_i, C_i) = \texpr{\text{e}_i}\\
     & \fresh{\ot{a}}\\
     & \text{fields}(\nvt{C}{a}) = \ot{T} \ \ot{f}\\
-    & \text{C} = \{ \ot{R} < \ot{T} \cup \{ \ot{a} < \tsxsns{a}{C}{N} \} \quad \text{where} \\
+    & C = \{ \ot{R} < \ot{T} \cup \{ \ot{a} < \tsxsns{a}{C}{N} \} \quad \text{where} \\
     & \quad \quad \quad \classheader \{ ... \} \}\\
-    \text{in} \ \ & ( \nvt{C}{a}, \text{C} \cup \bigcup_{i} \text{C}_i )
+    \text{in} \ \ & ( \nvt{C}{a}, C \cup \bigcup_{i} C_i )
 \end{align*}
 
 The constraints generated for an object creation are rather simple. \verb|TYPEExpr| is called recursively for every argument. Then, the types of all
@@ -110,8 +110,8 @@ Those fresh type variables must be subtypes of their corresponding upper bound a
 
 \begin{align*}
     \texpr{(\text{N})\text{e}} &=\\
-    \text{let} \ &= (\text{R}, \text{C}) = \texpr{\text{e}}\\
-    \text{in} \ \ &(\text{N}, \text{C})
+    \text{let} \ &= (\text{R}, C) = \texpr{\text{e}}\\
+    \text{in} \ \ &(\text{N}, C)
 \end{align*}
 
 For a cast the \verb|TYPEExpr| is called recursively on the expression that is casted. This recursive call returns a type and a constraint set. However, instead of returning that type, the type the expression is casted to and the constraint set are returned.
