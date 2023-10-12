@@ -1,0 +1,8 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+        \PYG{n+nd}{@dataclass}
+        \PYG{k}{class} \PYG{n+nc}{ClassDef}\PYG{p}{:}
+            \PYG{n}{name}\PYG{p}{:} \PYG{n+nb}{str}\PYG{p}{,}
+            \PYG{n}{superclass}\PYG{p}{:} \PYG{n}{Type}\PYG{p}{,}
+            \PYG{n}{typed\PYGZus{}fields}\PYG{p}{:} \PYG{n}{FieldEnv}\PYG{p}{,}
+            \PYG{n}{methods}\PYG{p}{:} \PYG{n+nb}{list}\PYG{p}{[}\PYG{n}{MethodDef}\PYG{p}{]}
+\end{Verbatim}

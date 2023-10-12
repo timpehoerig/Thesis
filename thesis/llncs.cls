@@ -220,7 +220,7 @@
 
 \setlength\headsep   {16\p@}
 
-\setlength\footnotesep{7.7\p@}
+\setlengthFootnotesep{7.7\p@}
 \setlength\textfloatsep{8mm\@plus 2\p@ \@minus 4\p@}
 \setlength\intextsep   {8mm\@plus 2\p@ \@minus 2\p@}
 
@@ -371,7 +371,7 @@ You should not use \verb|\subparagraph| with this class.\vskip0.5cm}
 \DeclareMathSymbol{\Psi}{\mathalpha}{letters}{"09}
 \DeclareMathSymbol{\Omega}{\mathalpha}{letters}{"0A}
 
-\let\footnotesize\small
+\letFootnotesize\small
 
 \if@custvec
 \def\vec#1{\mathchoice{\mbox{\boldmath$\displaystyle#1$}}
@@ -774,7 +774,7 @@ to0pt{\kern0.55\wd0\vrule height0.45\ht0\hss}\box0}}}}
                 }
                 {\end{multicols}}
 
-\renewcommand\footnoterule{%
+\renewcommandFootnoterule{%
   \kern-3\p@
   \hrule\@width 2truecm
   \kern2.6\p@}

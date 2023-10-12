@@ -1,0 +1,15 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+        \PYG{c+c1}{\PYGZsh{} grammar rules}
+
+        \PYG{n}{identifier}\PYG{p}{:} \PYG{o}{.}\PYG{o}{.}\PYG{o}{.}
+
+        \PYG{n}{variable}\PYG{p}{:} \PYG{n}{identifier}
+
+        \PYG{p}{[}\PYG{o}{.}\PYG{o}{.}\PYG{o}{.}\PYG{p}{]}
+
+        \PYG{c+c1}{\PYGZsh{} function for shaping}
+
+        \PYG{k}{def} \PYG{n+nf}{variable}\PYG{p}{(}\PYG{n}{tuple\PYGZus{}of\PYGZus{}elements\PYGZus{}of\PYGZus{}variable\PYGZus{}rule}\PYG{p}{)}\PYG{p}{:}
+            \PYG{p}{(}\PYG{n}{name}\PYG{p}{,} \PYG{p}{)} \PYG{o}{=} \PYG{n}{tuple\PYGZus{}of\PYGZus{}elements\PYGZus{}of\PYGZus{}variable\PYGZus{}rule}
+            \PYG{k}{return} \PYG{n}{Variable}\PYG{p}{(}\PYG{n}{name}\PYG{p}{)}
+\end{Verbatim}

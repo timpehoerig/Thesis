@@ -1,0 +1,10 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+\PYG{+w}{ }\PYG{esc}{\Decl}\PYG{+w}{ }\PYG{n}{eq}\PYG{+w}{ }\PYG{k+kr}{in}
+
+\PYG{+w}{ }\PYG{esc}{\Inst}\PYG{+w}{ }\PYG{n}{eq}\PYG{+w}{ }\PYG{k+kt}{:}\PYG{+w}{ }\PYG{k+kt}{Nat}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Nat}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Bool}
+\PYG{+w}{   }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{n}{λx}\PYG{o}{.}\PYG{+w}{ }\PYG{n}{λy}\PYG{o}{.}\PYG{+w}{ }\PYG{o}{..}\PYG{+w}{ }\PYG{k+kr}{in}
+\PYG{+w}{ }\PYG{esc}{\Inst}\PYG{+w}{ }\PYG{n}{eq}\PYG{+w}{ }\PYG{k+kt}{:}\PYG{+w}{ }\PYG{err}{∀}\PYG{n}{a}\PYG{o}{.}\PYG{+w}{ }\PYG{p}{[}\PYG{n}{eq}\PYG{+w}{ }\PYG{k+kt}{:}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Bool}\PYG{p}{]}\PYG{+w}{ }\PYG{o+ow}{=\PYGZgt{}}\PYG{+w}{ }\PYG{p}{[}\PYG{n}{a}\PYG{p}{]}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{p}{[}\PYG{n}{a}\PYG{p}{]}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Bool}
+\PYG{+w}{   }\PYG{o+ow}{=}\PYG{+w}{ }\PYG{k+kt}{Λa}\PYG{o}{.}\PYG{+w}{ }\PYG{n}{ƛ}\PYG{p}{(}\PYG{n}{eq}\PYG{+w}{ }\PYG{k+kt}{:}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{n}{a}\PYG{+w}{ }\PYG{o+ow}{\PYGZhy{}\PYGZgt{}}\PYG{+w}{ }\PYG{k+kt}{Bool}\PYG{p}{)}\PYG{o}{.}\PYG{+w}{ }\PYG{n}{λxs}\PYG{o}{.}\PYG{+w}{ }\PYG{n}{λys}\PYG{o}{.}\PYG{+w}{ }\PYG{o}{..}\PYG{+w}{ }\PYG{k+kr}{in}
+
+\PYG{+w}{ }\PYG{o}{..}\PYG{+w}{ }\PYG{n}{eq}\PYG{+w}{ }\PYG{l+m+mi}{42}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{o}{..}\PYG{+w}{ }\PYG{n}{eq}\PYG{+w}{ }\PYG{k+kt}{Nat}\PYG{+w}{ }\PYG{p}{[}\PYG{l+m+mi}{42}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{+w}{ }\PYG{p}{[}\PYG{l+m+mi}{42}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{..}
+\end{Verbatim}

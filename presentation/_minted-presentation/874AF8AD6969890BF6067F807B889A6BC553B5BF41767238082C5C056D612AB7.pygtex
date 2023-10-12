@@ -1,0 +1,11 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8\relax}]
+        \PYG{esc}{\pink{class} \green{Pair}}\PYG{o}{\PYGZlt{}}\PYG{esc}{\green{X} \pink{extends} \green{Object}}\PYG{o}{\PYGZlt{}}\PYG{o}{\PYGZgt{}}\PYG{p}{,}
+                   \PYG{esc}{\green{Y} \pink{extends} \green{Object}}\PYG{o}{\PYGZlt{}}\PYG{o}{\PYGZgt{}}\PYG{o}{\PYGZgt{}} \PYG{esc}{\pink{extends} \green{Object}}\PYG{o}{\PYGZlt{}}\PYG{o}{\PYGZgt{}}\PYG{p}{\PYGZob{}}
+          \PYG{esc}{\green{X} fst}\PYG{p}{;}
+          \PYG{esc}{\green{Y} snd}\PYG{p}{;}
+
+          \PYG{n}{setfst}\PYG{p}{(}\PYG{n}{newfst}\PYG{p}{)} \PYG{p}{\PYGZob{}}
+            \PYG{esc}{\pink{return new} \green{Pair}}\PYG{p}{(}\PYG{esc}{newfst}\PYG{p}{,} \PYG{esc}{this.snd}\PYG{p}{)}\PYG{p}{;}
+          \PYG{p}{\PYGZcb{}}
+        \PYG{p}{\PYGZcb{}}
+\end{Verbatim}

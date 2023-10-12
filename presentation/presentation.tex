@@ -5,201 +5,316 @@
 
 \input{../thesis/packages}
 \input{../thesis/commands}
-\input{../thesis/unicode}
 
-\title[Formal Dictionary Passing Transform]{Formal Proof of Type Preservation of the\\Dictionary Passing Transform for System F}
+\title[Type Inference for FGJ]{An Implementation of Type Inference for\\Featherweight Generic Java}
 \institute[Uni Freiburg]{Chair of Programming Languages, University of Freiburg}
-\author{Marius Weidner}
+\author{Timpe Hörig}
 
 \begin{document}
 
-\input{SystemF}
-\input{SystemFo}
-\input{DictionaryPassingTransform}
-
 \begin{frame}
-  \titlepage
+    \titlepage
 \end{frame}
 
-\section{Introduction}
+\section{Featherweight Generic Java}
 
 \begin{frame}[fragile]
-  \frametitle{Typeclasses}
-  \begin{block}{Overloading Equality in Haskell}
-    \begin{center}
-      ~
-      \begin{minted}[escapeinside=||]{haskell}
- class Eq α where
-   eq :: α → α → Bool
- 
- instance Eq Nat where
-   eq x y = x ≐ y
- instance Eq α ⇒ Eq [α] where
-   eq []       []       = True
-   eq (x : xs) (y : ys) = eq x y && eq xs ys 
-     
- .. eq 42 0 .. eq [42, 0] [42, 0] ..
-      \end{minted}
-      ~
-    \end{center}
-  \end{block}
+    \frametitle{Syntax}
+    \begin{align*}
+        \text{T} &:= \text{X} \ | \ \text{N}\\
+        \\
+        \text{N} &:= \text{C} \vv{\ot{T}}\\
+        \\
+        \text{L} &:= \text{class} \ \text{C} \xn \ \vartriangleleft \ \text{D} \{ \ \ot{T} \ \ot{f} \ [\text{K}] \ \ot{M} \ \}\\
+        \\
+        \color{red}\text{K} &\color{red}:= \text{C}(\ot{T} \ \ot{f})\{ \text{super}(\ot{f}); \ \text{this}. \ot{f} = \ot{f}; \} \\
+        \\
+        \text{M} &:= \color{red} \xn \text{T} \ \color{black} \text{m}(\color{red} \ot{T} \ \color{black} \ot{x}) \ \{\text{return e}\}\\
+        \\
+        \text{e} &:= \text{x} \ | \ \text{e.f} \ | \ \text{e.} \color{red} \text{<} \ot{T} \text{>} \color{black} \text{m(}\ot{e}\text{)} \ | \ \text{new C(}\ot{e}\text{)} \ | \ \text{(C)e}
+    \end{align*}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Desugaring Typeclasses}
-  \begin{block}{Overloading Equality in System \Fo}
-    \begin{center}
-      ~
-      \begin{minted}[escapeinside=||]{haskell}
- |\Decl| eq in
+    \frametitle{AST}
+    \begin{minted}[escapeinside=||]{python}
+        @dataclass
+        class ClassDef:
+            name: str,
+            superclass: Type,
+            typed_fields: FieldEnv,
+            methods: list[MethodDef]
+    \end{minted}
+\end{frame}
 
- |\Inst| eq : Nat → Nat → Bool 
-   = λx. λy. .. in
- |\Inst| eq : ∀α. [eq : α → α → Bool] ⇒ [α] → [α] → Bool 
-   = Λα. ƛ(eq : α → α → Bool). λxs. λys. .. in
+\begin{frame}[fragile]
+    \frametitle{Parser}
+    \begin{minted}[escapeinside=||]{python}
+        # grammar rules
     
- .. eq 42 0 .. eq Nat [42, 0] [42, 0] .. 
-      \end{minted}
-      ~
-    \end{center}
-  \end{block}
+        identifier: ...
+    
+        variable: identifier
+    
+        [...]
+    
+        # function for shaping
+    
+        def variable(tuple_of_elements_of_variable_rule):
+            (name, ) = tuple_of_elements_of_variable_rule
+            return Variable(name)
+    \end{minted}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Dictionary Passing Transform}
-  \begin{block}{Overloading Equality in System \Fo\ }
-    \begin{center}
-      \begin{minted}[escapeinside=||]{haskell}
- |\Decl| eq in
- |\Inst| eq : Nat → Nat → Bool 
-   = λx. λy. .. in
- |\Inst| eq : ∀α. [eq : α → α → Bool] ⇒ [α] → [α] → Bool 
-   = Λα. ƛ(eq : α → α → Bool). λxs. λys. .. in
- .. eq 42 0 .. eq Nat [42, 0] [42, 0] .. 
-      \end{minted}
-    \end{center}
-  \end{block}
-  \begin{block}{System \Fo\ Transformed to System F}
-    \begin{center}
-      \begin{minted}[escapeinside=||]{haskell}
- let eq₁ : Nat → Nat → Bool 
-   = λx. λy. .. in
- let eq₂ : ∀α. (α → α → Bool) → [α] → [α] → Bool 
-   = Λα. λeq₁. λxs. λys. .. in
-  
- .. eq₁ 42 0 .. eq₂ Nat eq₁ [42, 0] [42, 0] .. 
-      \end{minted}
-    \end{center}
-  \end{block}
-\end{frame}
-
-\section{Agda Formalization}
-
-\begin{frame}[fragile]
-  \frametitle{Elegant Syntax Representations in Agda}
-  \begin{block}{System \Fo\ Syntax}
-    \begin{small}
-      \FoTerm
-    \end{small}
-  \end{block}
+    \frametitle{genericSupertype}
+    \begin{align*}
+        &\text{genericSupertype} (\text{C}, \ot{T}, \text{C} ) = \ot{T}\\
+        \\
+        &\frac{ \text{class} \ \text{C} \yp \vartriangleleft \nvt{C'}{M} \ \{ ... \} }{ \text{genericSupertype} ( \text{C}, \ot{T}, \text{D} ) = \text{genericSupertype} ( \text{C'}, \tsxsns{T}{Y}{M}, \text{D} ) }\\
+    \end{align*}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Substitution \& Renaming}
-  \begin{block}{Renaming}
-    \begin{small}
-      \begin{AgdaSuppressSpace}
-        \FRen
-        \phantom{}
-        \Fwk
-      \end{AgdaSuppressSpace}
-    \end{small}
-  \end{block}
-  \begin{block}{Substitution}
-    \begin{small}
-      \begin{AgdaSuppressSpace}
-        \FSub
-        \phantom{}
-        \Fsubs
-      \end{AgdaSuppressSpace}
-    \end{small}
-  \end{block}
+    \frametitle{extended Syntax}
+    \begin{align*}
+        \text{T} &:= \text{a} \ | \ \text{X} \ | \ \text{N} &\text{type variable, type parameter, non type variable} \\
+        \text{N} &:= \text{C} \vv{\ot{T}} &\text{class type (with type variables)}\\
+        \text{sc} &:= \text{T} < \text{U} \ | \ \text{T} = \text{U} &\text{simple constraint: subtype or equality}\\
+        \text{oc} &:= \{ \{ \ot{sc}_1 \}, \ ..., \{ \ot{sc}_n \} \} &\text{or-constraint}\\
+        \text{c} &:= \text{sc} \ | \ \text{oc} &\text{constraint}\\
+        C &:= \{ \ot{c} \} &\text{constraint set}\\
+        \lambda &:= \cm : \yp \oto{\text{T}} &\text{method type assumption}\\
+        \eta &:= \text{x} : \text{T} &\text{parameter assumption}\\
+        \sprod{0.7} &:= \sprod{0.7} \cup \overline{\lambda} &\text{method type environment}\\
+        \Theta &:= ( \sprod{0.7}; \overline{\eta} )
+    \end{align*}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Overloading Formalized}
-  \begin{block}{Context}
-    \begin{small}
-      \FoCtx
-    \end{small}
-  \end{block}
-  \begin{block}{Constraint Solving}
-    \begin{small}
-      \FoCstrSolve
-    \end{small}
-  \end{block}
+    \frametitle{Type Infernece}
+    \begin{align*}
+        \text{FJType}&\text{Inference}(\sprod{0.7}, \ \classheader \{ ... \}) = \\
+        \text{let} & \ (\overline{\lambda}, \ C) \quad \quad \quad = \text{FJType}(\sprod{0.7}, \classheader \{ ... \}) \\
+        & \ (\sigma, \yp) = \text{Unify}(C, \{ \overline{\text{X}} <: \overline{\text{N}} \} \cup \{ \zq \ | \\
+        & \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad (\cm : \zq \oto{T} ) \in \overline{\lambda} \} ) \\
+        \text{in} \ & \sprod{0.7} \cup \ \{( \cm \ : \ \yp \ \oto{\sigma(a)}) \ | \\
+        & \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad (\cm : \oto{a} ) \in \overline{\lambda} \}
+    \end{align*}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Extrinsic Typing Rules}
-  \begin{block}{System \Fo\ Typing}
-    \begin{small}
-      \FoTyping
-    \end{small}
-  \end{block}
-\end{frame}
-
-\section{Agda Formalization of the Dictionary Passing Transform}
-\begin{frame}[fragile]
-  \frametitle{Fun Lemmas on Our Way to Type Preservation}
-  \begin{block}{Type Transform Preserves Renaming}
-    \DPTTypePresRen
-  \end{block}
-  \begin{block}{Type Transform Preserves Substitution}
-    \DPTTypePresSub
-  \end{block}
-  \begin{block}{Instance Resolution Transforms to Unqiue Variable}
-    \DPTOVarPresLookup
-  \end{block}
+    \frametitle{FJType}
+    \begin{align*}
+        \text{FJType}(\sprod{0.7}, & \ \classheader \{ \ot{T} \ \ot{f}; \ \ot{M} \}) = \\
+        \text{let} \ & \overline{a}_m \ \text{be fresh type variables for each m} \in \ot{M} \\
+        & \overline{\lambda}_0 = \{\cm : \ \yp \ot{T} \to a_m \\
+        & \quad \quad \quad \quad \quad \quad | \ \text{m} \in \ot{M}, \ \mtype = \yp \ot{T} \to \text{T} \}\\
+        & C_0 = \{ a_m < \text{T} \ | \ \text{m} \in \ot{M}, \ \mtype = \yp \oto{T} \}\\
+        & \overline{\lambda}' = \{ ( \cm : \ \overline{a} \to a_m ) \\
+        & \quad \quad \quad \quad \quad \quad | \ \text{m} \in \ot{M}, \ \mtype \ \text{not defined}, \ \fresh{\overline{a}} \}\\
+        & C_m = \{\{ a_m < \text{Object}, \overline{a} < \ot{Object} \} \ | \ ( \cm : \ \overline{a} \ \to a_m) \in \overline{\lambda}' \} \\
+        & \sprod{0.7} = \sprod{0.7} \cup \overline{\lambda}' \cup \overline{\lambda}_0\\
+    \text{in} \ &(\sprod{0.7}, C_0 \cup C_m \cup \bigcup_{ \text{m} \in \ot{M} } \text{TYPEMethod}(\sprod{0.7}, C \vv{\ot{X}}, \text{m}))\\
+    \end{align*}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Type Preservation of the Dictionary Passing Transform}
-  \begin{block}{Typed System \Fo\ tranforms to typed System F}
-    \begin{small}
-      \begin{AgdaSuppressSpace}
-        \DPTTermPres
-      \end{AgdaSuppressSpace}
-    \end{small}
-  \end{block}
+    \frametitle{TYPEMethod}
+    \begin{align*}
+        \text{TYPEMethod}&(\sprod{0.7}, \ \text{C<} \ot{X} \text{>}, \ \text{m} ( \ot{x} ) \{ \ \text{return e}; \} ) = \\
+        \text{let} \ &\yp \oto{\text{T}} = \sprod{0.7} ( \cm ) \\
+        & ( \text{R}, C ) = \text{TYPEExpr} (( \sprod{0.7}; \{ \text{this} : \text{C<} \ot{X} \text{>} \} \cup \{ \ot{x} : \ot{T} \} ) , \text{e} ) \\
+        \text{in} \ \  & C \cup \{ \text{R} < \text{T} \}\\
+    \end{align*}
 \end{frame}
 
-\section{Future Work}
+\begin{frame}[fragile]
+    \frametitle{TYPEExpr | Variable}
+    \begin{align*}
+        \texpr{\text{x}} = (\overline{\eta} (\text{x}), \emptyset)\\
+    \end{align*}
+\end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Further Work: Hindley Milner \& Semantic Preservation}
-  \begin{block}{Overloading in Hindley Milner}
-    \
-    \begin{itemize}
-      \item Constraint abstractions cannot require poly types
-      \begin{enumerate}
-        \item Introduce sorts \Constr{mₛ} and \Constr{pₛ} in favour of single sort \Constr{τₛ}
-      \end{enumerate}
-      \item All instances must differ in the type of their first argument for each overloaded variable
-	    \begin{enumerate}
-        \item Preserves Algorithm W
-      \end{enumerate}
-    \end{itemize}
-    \
-  \end{block}
-  \begin{block}{Proving Semantic Preservation}
-    \
-    \begin{itemize}
-      \item Overloaded languages require typed semantics
-      \item Prove that, if \Sym{⊢e} \Data{↪} \Sym{⊢e'} then \\ \Constr{∃} \Constr{[} \Sym{e''} \Constr{]} (\Data{⊢e↪e'⇝e↪e'} \Sym{⊢e} \Data{↪*} \Sym{e''}) \Constr{×} (\Data{⊢e↪e'⇝e↪e'} \Sym{⊢e'} \Data{↪*} \Sym{e''}) 
-    \end{itemize}
-    \
-  \end{block}
+    \frametitle{TYPEExpr | Field Lookup}
+    \begin{align*}
+        \texpr{e.f} &= \\
+        \text{let} \ &( \text{R}, C_R ) = \texpr{e} \\
+        &\fresh{a} \\
+        &\text{c} = \text{oc} \{ \{ \text{R} < \text{C<} \ot{a} \text{>}, \text{a} = \tsxsn{a}{X}{T}, \ot{a} < \tsxsns{a}{X}{N} \ | \ \fresh{\ot{a}} \} \\
+        & \quad \quad \quad \quad | \ \text{T f} \in \class{X}{N} \}\\
+        \text{in} \ \ & (\text{a}, (C_R \cup \{ \text{c} \} ))
+    \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Solved Form}
+    \begin{align*}
+        1.& \quad \text{a} < \text{b}\\
+        \\
+        2.& \quad \text{a} = \text{b}\\
+        \\
+        3.& \quad \text{a} < \text{C<} \ot{T} \text{>}\\
+        \\
+        4.& \quad \text{a} = \text{C<} \ot{T} \text{>} \ \text{with a} \notin \ot{T}\\
+        \\
+        \text{No variable is allowed to occur } & \text{twice on the left side of rules 3 and 4.}
+    \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Step 1}
+    \begin{align*}
+        &\frac{\cand \{ \text{a} < \nvt{C}{T}, \ \text{a} < \nvt{D}{V} \} }{ \cand \{ a < \nvt{C}{T}, \ \nvt{C}{T} < \nvt{D}{V} \} } \quad \Delta \vdash \nvt{C}{X} <: \nvt{D}{N} &\text{match}\\
+        \\
+        &\frac{\cand \{ \nvt{C}{T} < \text{a}, \ \nvt{D}{V} < \text{a} \} }{ \cand \nvt{C}{T} < \nvt{D}{V}, \ \nvt{D}{V} < \text{a} } \quad \Delta \vdash \nvt{C}{X} <: \nvt{D}{N} &\text{match reverse}\\
+        \\
+        &\frac{\cand \{ \text{a} < \nvt{C}{T}, \ \text{b} <^* \text{a}, \text{b} < \nvt{D}{U}  \} }{ \cand \{ \text{a} < \nvt{C}{T}, \ \text{b} <^* \text{a}, \ \text{b} < \nvt{D}{U}, \ \text{b} < \nvt{C}{T} \} } &\text{adopt}\\
+        \\
+        &\frac{\cand \{ \nvt{C}{T} < \text{a}, \ \text{a} <^* \text{b}, \nvt{D}{U} < \text{b} \} }{ \cand \{\nvt{C}{T} < \text{a}, \ \text{a} <^* \text{b}, \ \nvt{D}{U} < \text{b}, \ \nvt{C}{T} < \text{b} \} } &\text{reverse adopt}
+    \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Step 2}
+    \begin{align*}
+        1.& \quad \nvt{C}{T} < \nvt{D}{U} \quad \text{where C cannot be a subtype of D.}\\
+        2.& \quad a < \nvt{C}{T}, \ a < \nvt{D}{U} \quad \text{where C cannot be a subtype of D and vice versa.}\\
+        3.& \quad \nvt{C}{T} < a
+    \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{expandLB}
+    \begin{align*}
+        \text{expandLB} ( \nvt{C}{T} < a, \ a < \nvt{D}{U} ) = \{ \{ &a = \tsxsn{T}{X}{N} \} \\
+         &| \ \Delta \vdash \nvt{C}{X} < \text{N}, \ \Delta \vdash \text{N} < \nvt{D}{P} \}\\
+        \text{where} \ \ot{P} \ \text{is determined by } & \Delta \vdash \nvt{C}{X} < \nvt{D}{P} \ \text{and} \ \tsxsns{T}{X}{P} = \ot{U}\\
+    \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Step 3}
+    \begin{align*}
+        \frac{C \cup \{ \text{a} = \text{T} \}}{ \txn{T}{a}{C} \cup \{ \text{a} = \text{T} \} } \quad \text{where a occurs in C but not in T}
+    \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Step 4}
+    \begin{align*}
+        \text{If C'' has changed, then start again from Step 1.} 
+    \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Step 5}
+    \begin{align*}
+        \frac{\cand \{ \text{C} \cup \text{a} < \text{b} \}}{ \txn{a}{b}{C} \cup \{ \text{b} = \text{a} \} } \quad &\text{sub elim}
+        \\
+        \\
+        \frac{\cand \{ \text{a} = \text{a} \} }{ C } \quad &\text{erase}
+    \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Step 6}
+    \begin{align*}
+        \sigma &= \{ \text{b} \to \tsxsn{Y}{a}{T} \ | \ (\text{b} = \text{T}) \in C_= \} \cup \{ \ot{a} \to \ot{Y} \} \cup \{ \text{b} \to \text{X} \ | \ (\text{b} < \text{X}) \in C_< \}\\
+        \\
+        \gamma &= \{ \text{Y} \vartriangleleft \tsxsn{Y}{a}{N} \ | \ (\text{a} < \text{N}) \in C_< \}\\
+    \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Type Infernece}
+    \begin{align*}
+        \text{FJType}&\text{Inference}(\sprod{0.7}, \ \classheader \{ ... \}) = \\
+        \text{let} & \ (\overline{\lambda}, \ C) \quad \quad \quad = \text{FJType}(\sprod{0.7}, \classheader \{ ... \}) \\
+        & \ (\sigma, \yp) = \text{Unify}(C, \{ \overline{\text{X}} <: \overline{\text{N}} \} \cup \{ \zq \ | \\
+        & \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad (\cm : \zq \oto{T} ) \in \overline{\lambda} \} ) \\
+        \text{in} \ & \sprod{0.7} \cup \ \{( \cm \ : \ \yp \ \oto{\sigma(a)}) \ | \\
+        & \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad (\cm : \oto{a} ) \in \overline{\lambda} \}
+    \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Example}
+    \begin{minted}[escapeinside=||]{java}
+        |\pink{class} \green{Pair}|<|\green{X} \pink{extends} \green{Object}|<>,
+                   |\green{Y} \pink{extends} \green{Object}|<>> |\pink{extends} \green{Object}|<>{
+          |\green{X} fst|;
+          |\green{Y} snd|;
+    
+          setfst(newfst) {
+            |\pink{return new} \green{Pair}|(|newfst|, |this.snd|);
+          }
+        }
+    \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Example}
+    \begin{align*}
+        \lambda &= \{ ( \cxnm{Pair}{X}{Object}{setfst} ): \ [\text{a}_1] \to \text{a}_0 \}\\
+        \text{C} &= \{ \text{a}_0 < \text{Object}, \ \text{a}_1 < \text{Object} \}\\
+    \end{align*}
+
+    \begin{align*}
+        \text{C} = \{& \text{a}_0 < \text{Object}, \ \text{a}_1 < \text{Object}, \\
+        &\text{a}_1 < \text{a}_5, \ \text{a}_5 < \text{Object}, \ \text{a}_2 < \text{a}_6, \ \text{a}_6 < \text{Object}, \\
+        & \{ \{ \text{Pair<X, Y>} < \text{Pair<} \text{a}_3, \text{a}_4 \text{>}, \ \text{a}_2 = \text{a}_4, \ \text{a}_3 < \text{Object}, \ \text{a}_4 < \text{Object} \} \} \\
+        &\}\\
+    \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Example}
+    \begin{align*}
+        \lambda = \{& ( \cxnm{Pair}{X}{Object}{setfst} ): \ [\text{a}_1] \to \text{a}_0 \}\\
+        \text{C} = \{& \text{a}_0 < \text{Object}, \ \text{a}_1 < \text{Object}, \\
+        &\text{a}_1 < \text{a}_5, \ \text{a}_5 < \text{Object}, \ \text{a}_2 < \text{a}_6, \ \text{a}_6 < \text{Object}, \\
+        & \{ \{ \text{Pair<X, Y>} < \text{Pair<} \text{a}_3, \text{a}_4 \text{>}, \ \text{a}_2 = \text{a}_4, \ \text{a}_3 < \text{Object}, \ \text{a}_4 < \text{Object} \} \},\\
+        &\text{Pair<}\text{a}_5, \text{a}_6\text{>} < \text{a}_0\\
+        &\}\\
+    \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Example}
+    \begin{align*}
+        \frac{\cand \{ \nvtt{Pair}{\nvtt{X}{}, \nvtt{Y}{}} < \nvtt{Pair}{\fa{3}, \fa{4}} \} }{\cand \{ \nvtt{Pair}{\nvtt{X}{}, \nvtt{Y}{}} = \nvtt{Pair}{\fa{3}, \fa{4}} \} } \quad \text{adapt}
+    \end{align*}
+
+    \begin{align*}
+        \frac{\cand \{ \nvtt{Pair}{\nvtt{X}{}, \nvtt{Y}{}} = \nvtt{Pair}{\fa{3}, \fa{4}} \} }{\cand \{ \nvtt{X}{} = \fa{3}, \ \nvtt{Y}{} = \fa{4} \} } \quad \text{reduce}
+    \end{align*}
+
+    \begin{align*}
+        \frac{\cand \{ \nvtt{X}{} = \fa{3} \} }{\cand \{ \fa{3} = \nvtt{X}{} \} } \quad \text{and} \quad \frac{\cand \{ \nvtt{Y}{} = \fa{3} \} }{\cand \{ \fa{3} = \nvtt{Y}{} \} } \quad \text{swap}
+    \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Example}
+    \begin{align*}
+        \text{C} = \{& \nvtt{Y}{} < \fa{6}, \ \fa{1} < \fa{5}, \ \fa{6} < \nvtt{Object}{}, \ \fa{1} < \nvtt{Object}{}, \\
+        &\nvtt{X}{} < \nvtt{Object}{}, \ \fa{4} = \nvtt{Y}{}, \ \nvtt{Y}{} < \nvtt{Object}{}, \\
+        &\fa{0} = \nvtt{Pair}{\fa{5}, \ \fa{6}}, \ \fa{3} = \nvtt{X}{}, \fa{2} = \nvtt{Y}{}, \ \fa{5} < \nvtt{Object}{} \\
+        &\}
+    \end{align*}
+
+    \begin{align*}
+        \text{C}_= &= \{ \fa{0} = \nvtt{Pair}{\fa{1}, \ \text{Y}}, \ \fa{6} = \text{Y}, \ \fa{5} = \fa{1}, \ \fa{4} = \text{Y}, \ \fa{3} = \text{X}, \ \fa{2} = \text{Y} \}\\
+        \text{C}_< &= \{ \fa{1} < \nvtt{Object}{} \}
+    \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]
+    \begin{align*}
+        \text{Vielen Dank für Ihre Aufmerksamkeit!}
+    \end{align*}
 \end{frame}
 
 \end{document}

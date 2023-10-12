@@ -1,0 +1,141 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{Boadilla}
+\useoutertheme{infolines}
+\setbeamertemplate{navigation symbols}{}
+
+\input{../thesis/packages}
+\input{../thesis/commands}
+
+\title[Global Type Inference for FGJ]{An implementation of Type Inference for\\Featherweight Generic Java}
+Institute[Uni Freiburg]{Chair of Programming Languages, University of Freiburg}
+\author{Timpe Hoerig}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\section{Introduction}
+
+\begin{frame}[fragile]
+  \frametitle{Typeclasses}
+  \begin{block}{Overloading Equality in Haskell}
+    \begin{center}
+      ~
+      \begin{minted}[escapeinside=||]{haskell}
+test
+      \end{minted}
+      ~
+    \end{center}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Desugaring Typeclasses}
+  \begin{block}{Overloading Equality in System Fo}
+    \begin{center}
+      ~
+      \begin{minted}[escapeinside=||]{haskell}
+test
+      \end{minted}
+      ~
+    \end{center}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Dictionary Passing Transform}
+  \begin{block}{Overloading Equality in System Fo\ }
+    \begin{center}
+      \begin{minted}[escapeinside=||]{haskell}
+twt
+      \end{minted}
+    \end{center}
+  \end{block}
+  \begin{block}{System Fo\ Transformed to System F}
+    \begin{center}
+      \begin{minted}[escapeinside=||]{haskell}
+test
+      \end{minted}
+    \end{center}
+  \end{block}
+\end{frame}
+
+\section{Agda Formalization}
+
+\begin{frame}[fragile]
+  \frametitle{Elegant Syntax Representations in Agda}
+  \begin{block}{System Fo\ Syntax}
+    \begin{small}
+test
+    \end{small}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Overloading Formalized}
+  \begin{block}{Context}
+    \begin{small}
+test
+    \end{small}
+  \end{block}
+  \begin{block}{Constraint Solving}
+    \begin{small}
+test
+    \end{small}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Extrinsic Typing Rules}
+  \begin{block}{System Fo\ Typing}
+    \begin{small}
+test
+    \end{small}
+  \end{block}
+\end{frame}
+
+\section{Agda Formalization of the Dictionary Passing Transform}
+\begin{frame}[fragile]
+  \frametitle{Fun Lemmas on Our Way to Type Preservation}
+  \begin{block}{Type Transform Preserves Renaming}
+test
+  \end{block}
+  \begin{block}{Type Transform Preserves Substitution}
+test
+  \end{block}
+  \begin{block}{Instance Resolution Transforms to Unqiue Variable}
+test
+  \end{block}
+\end{frame}
+
+\section{Future Work}
+
+\begin{frame}[fragile]
+  \frametitle{Further Work: Hindley Milner \& Semantic Preservation}
+  \begin{block}{Overloading in Hindley Milner}
+    \
+    \begin{itemize}
+      \item Constraint abstractions cannot require poly types
+      \begin{enumerate}
+        \item Introduce sorts
+      \end{enumerate}
+      \item All instances must differ in the type of their first argument for each overloaded variable
+        \begin{enumerate}
+        \item Preserves Algorithm W
+      \end{enumerate}
+    \end{itemize}
+    \
+  \end{block}
+  \begin{block}{Proving Semantic Preservation}
+    \
+    \begin{itemize}
+      \item Overloaded languages require typed semantics
+      \item Prove that, if 
+    \end{itemize}
+    \
+  \end{block}
+\end{frame}
+
+\end{document}
