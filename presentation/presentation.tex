@@ -67,15 +67,6 @@
 \end{frame}
 
 \begin{frame}[fragile]
-    \frametitle{genericSupertype}
-    \begin{align*}
-        &\text{genericSupertype} (\text{C}, \ot{T}, \text{C} ) = \ot{T}\\
-        \\
-        &\frac{ \text{class} \ \text{C} \yp \vartriangleleft \nvt{C'}{M} \ \{ ... \} }{ \text{genericSupertype} ( \text{C}, \ot{T}, \text{D} ) = \text{genericSupertype} ( \text{C'}, \tsxsns{T}{Y}{M}, \text{D} ) }\\
-    \end{align*}
-\end{frame}
-
-\begin{frame}[fragile]
     \frametitle{extended Syntax}
     \begin{align*}
         \text{T} &:= \text{a} \ | \ \text{X} \ | \ \text{N} &\text{type variable, type parameter, non type variable} \\
@@ -92,7 +83,7 @@
 \end{frame}
 
 \begin{frame}[fragile]
-    \frametitle{Type Infernece}
+    \frametitle{Type Inference}
     \begin{align*}
         \text{FJType}&\text{Inference}(\sprod{0.7}, \ \classheader \{ ... \}) = \\
         \text{let} & \ (\overline{\lambda}, \ C) \quad \quad \quad = \text{FJType}(\sprod{0.7}, \classheader \{ ... \}) \\

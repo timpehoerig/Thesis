@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2023.10.11)  12 OCT 2023 11:07
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2023.10.11)  12 OCT 2023 13:38
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -1174,16 +1174,16 @@ LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
 \openout4 = `presentation.vrb'.
 
 
-(./presentation.vrb) [7
+(./presentation.vrb)
+Overfull \vbox (17.77515pt too high) detected at line 111
+ []
+
+[7
 
 ]
 \openout4 = `presentation.vrb'.
 
- (./presentation.vrb)
-Overfull \vbox (17.77515pt too high) detected at line 120
- []
-
-[8
+ (./presentation.vrb) [8
 
 ]
 \openout4 = `presentation.vrb'.
@@ -1193,13 +1193,13 @@ Overfull \vbox (17.77515pt too high) detected at line 120
 ]
 \openout4 = `presentation.vrb'.
 
- (./presentation.vrb) [10
+ (./presentation.vrb)
+[10
 
 ]
 \openout4 = `presentation.vrb'.
 
- (./presentation.vrb)
-[11
+ (./presentation.vrb) [11
 
 ]
 \openout4 = `presentation.vrb'.
@@ -1209,13 +1209,13 @@ Overfull \vbox (17.77515pt too high) detected at line 120
 ]
 \openout4 = `presentation.vrb'.
 
- (./presentation.vrb) [13
+ (./presentation.vrb)
+[13
 
 ]
 \openout4 = `presentation.vrb'.
 
- (./presentation.vrb)
-[14
+ (./presentation.vrb) [14
 
 ]
 \openout4 = `presentation.vrb'.
@@ -1225,13 +1225,13 @@ Overfull \vbox (17.77515pt too high) detected at line 120
 ]
 \openout4 = `presentation.vrb'.
 
- (./presentation.vrb) [16
+ (./presentation.vrb)
+[16
 
 ]
 \openout4 = `presentation.vrb'.
 
- (./presentation.vrb)
-[17
+ (./presentation.vrb) [17
 
 ]
 \openout4 = `presentation.vrb'.
@@ -1241,13 +1241,8 @@ Overfull \vbox (17.77515pt too high) detected at line 120
 ]
 \openout4 = `presentation.vrb'.
 
- (./presentation.vrb) [19
-
-]
-\openout4 = `presentation.vrb'.
-
  (./presentation.vrb)
-[20
+[19
 
 ]
 \openout4 = `presentation.vrb'.
@@ -1257,7 +1252,12 @@ Overfull \vbox (17.77515pt too high) detected at line 120
 
 
 (./_minted-presentation/874AF8AD6969890BF6067F807B889A6BC553B5BF41767238082C5C0
-56D612AB7.pygtex)) [21
+56D612AB7.pygtex)) [20
+
+]
+\openout4 = `presentation.vrb'.
+
+ (./presentation.vrb) [21
 
 ]
 \openout4 = `presentation.vrb'.
@@ -1267,24 +1267,19 @@ Overfull \vbox (17.77515pt too high) detected at line 120
 ]
 \openout4 = `presentation.vrb'.
 
- (./presentation.vrb) [23
+
+(./presentation.vrb) [23
 
 ]
 \openout4 = `presentation.vrb'.
 
-
-(./presentation.vrb) [24
-
-]
-\openout4 = `presentation.vrb'.
-
- (./presentation.vrb) [25
+ (./presentation.vrb) [24
 
 ]
 \openout4 = `presentation.vrb'.
 
  (./presentation.vrb)
-[26
+[25
 
 ]
 \tf@nav=\write8
@@ -1303,10 +1298,10 @@ runsystem(rm presentation.pyg)...executed.
 
  ) 
 Here is how much of TeX's memory you used:
- 28789 strings out of 480247
- 581329 string characters out of 5896150
+ 28783 strings out of 480247
+ 581260 string characters out of 5896150
  868663 words of memory out of 5000000
- 46012 multiletter control sequences out of 15000+600000
+ 46010 multiletter control sequences out of 15000+600000
  479880 words of font info for 57 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  128i,15n,122p,411b,572s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -1326,10 +1321,10 @@ t/fonts/type1/public/amsfonts/cm/cmssi8.pfb></usr/share/texlive/texmf-dist/font
 s/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type
 1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/publi
 c/amsfonts/symbols/msam10.pfb>
-Output written on presentation.pdf (26 pages, 184873 bytes).
+Output written on presentation.pdf (25 pages, 183671 bytes).
 PDF statistics:
- 519 PDF objects out of 1000 (max. 8388607)
- 214 compressed objects within 3 object streams
- 54 named destinations out of 1000 (max. 500000)
+ 512 PDF objects out of 1000 (max. 8388607)
+ 209 compressed objects within 3 object streams
+ 52 named destinations out of 1000 (max. 500000)
  51 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -1765,11 +1765,6 @@ INPUT ./presentation.vrb
 INPUT presentation.vrb
 INPUT ./presentation.vrb
 INPUT presentation.vrb
-OUTPUT presentation.vrb
-INPUT ./presentation.vrb
-INPUT presentation.vrb
-INPUT ./presentation.vrb
-INPUT presentation.vrb
 OUTPUT presentation.pyg
 INPUT ./presentation.pyg
 INPUT ./_minted-presentation/874AF8AD6969890BF6067F807B889A6BC553B5BF41767238082C5C056D612AB7.pygtex
