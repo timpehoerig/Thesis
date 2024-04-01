@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2023.10.11)  12 OCT 2023 13:38
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2023.11.3)  11 FEB 2024 13:59
 entering extended mode
  \write18 enabled.
  %&-line parsing enabled.
@@ -1298,10 +1298,10 @@ runsystem(rm presentation.pyg)...executed.
 
  ) 
 Here is how much of TeX's memory you used:
- 28783 strings out of 480247
- 581260 string characters out of 5896150
- 868663 words of memory out of 5000000
- 46010 multiletter control sequences out of 15000+600000
+ 28783 strings out of 480194
+ 581262 string characters out of 5893742
+ 868938 words of memory out of 5000000
+ 46026 multiletter control sequences out of 15000+600000
  479880 words of font info for 57 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  128i,15n,122p,411b,572s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -1321,9 +1321,9 @@ t/fonts/type1/public/amsfonts/cm/cmssi8.pfb></usr/share/texlive/texmf-dist/font
 s/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type
 1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/texmf-dist/fonts/type1/publi
 c/amsfonts/symbols/msam10.pfb>
-Output written on presentation.pdf (25 pages, 183671 bytes).
+Output written on presentation.pdf (25 pages, 183555 bytes).
 PDF statistics:
- 512 PDF objects out of 1000 (max. 8388607)
+ 511 PDF objects out of 1000 (max. 8388607)
  209 compressed objects within 3 object streams
  52 named destinations out of 1000 (max. 500000)
  51 words of extra memory for PDF output out of 10000 (max. 10000000)
